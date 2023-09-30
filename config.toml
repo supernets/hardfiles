@@ -1,0 +1,6 @@
+webroot = "www"
+lport = "5000"
+vhost = "hardfiles.org"
+dbfile = "dbfile.db"
+filelen = 6
+folder = "files"

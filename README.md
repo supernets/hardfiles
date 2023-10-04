@@ -17,14 +17,24 @@ HardFiles is built on the principle of flexibility. If you choose to run your ow
 ## Deployment Guide for HardFiles
 
 #### 1. Configuration:
-Start by adjusting the necessary configuration variables in `main.go`.
+Start by adjusting the necessary configuration variables in `config.toml`.
 
-#### 2. Build and Run:
+#### 2. Build and Run 
+
+##### Bare Metal:
+
 Execute the following commands to build and initiate HardFiles:
 ```
 go build -o hardfiles main.go
 mkdir files
 ./hardfiles
+```
+
+##### Docker Compose:
+
+Execute the following commands to build and initiate HardFiles in Docker:
+```
+docker compose up -d --build
 ```
 
 #### 3. Default Port:

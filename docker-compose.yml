@@ -1,0 +1,10 @@
+services:
+  hardfiles:
+    container_name: hardfiles
+    build: .
+    volumes:
+      - "$PWD/files:/app/files"
+      - "$PWD/www:/app/www"
+      - "$PWD/config.toml:/app/config.toml"
+    ports:
+      - "5000:5000"

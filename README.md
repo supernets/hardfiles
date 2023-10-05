@@ -16,10 +16,18 @@ HardFiles is built on the principle of flexibility. If you choose to run your ow
 
 ## Deployment Guide for HardFiles
 
-#### 1. Configuration:
+#### 1. Clone this repository
+
+This is necessary even when using the Docker image as the image does not contain the HardFiles frontend.
+
+```
+git clone https://git.supernets.org/supernets/hardfiles.git
+```
+
+#### 2. Configuration:
 Start by adjusting the necessary configuration variables in `config.toml`.
 
-#### 2. Build and Run 
+#### 3. Build and Run 
 
 ##### Bare Metal:
 

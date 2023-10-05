@@ -34,7 +34,7 @@ mkdir files
 
 Execute the following commands to build and initiate HardFiles in Docker:
 ```
-docker compose up -d --build
+docker compose up -d
 ```
 
 #### 3. Default Port:

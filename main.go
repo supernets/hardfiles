@@ -9,12 +9,12 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
-	"github.com/boltdb/bolt"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/gorilla/mux"
 	"github.com/landlock-lsm/go-landlock/landlock"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	bolt "go.etcd.io/bbolt"
 )
 
 var (
@@ -35,6 +35,67 @@ func LoadConf() {
 	if _, err := toml.DecodeFile("config.toml", &conf); err != nil {
 		log.Fatal().Err(err).Msg("unable to parse config.toml")
 	}
+}
+
+func shred(path string) error {
+	log.Info().Msg("shredding file")
+	fileinfo, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+	size := fileinfo.Size()
+	err = scramble(path, size)
+	if err != nil {
+		return err
+	}
+
+	err = zeros(path, size)
+	if err != nil {
+		return err
+	}
+
+	err = os.Remove(path)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func scramble(path string, size int64) error {
+	var i int64
+	for i = 0; i < 7; i++ { // 7 iterations
+		file, err := os.OpenFile(path, os.O_RDWR, 0)
+		defer file.Close()
+		if err != nil {
+			return err
+		}
+		offset, err := file.Seek(0, 0)
+		if err != nil {
+			return err
+		}
+		buff := make([]byte, size)
+		rand.Read(buff)
+		file.WriteAt(buff, offset)
+		file.Close()
+	}
+	return nil
+}
+
+func zeros(path string, size int64) error {
+	file, err := os.OpenFile(path, os.O_RDWR, 0)
+	defer file.Close()
+	if err != nil {
+		return err
+	}
+
+	offset, err := file.Seek(0, 0)
+	if err != nil {
+		return err
+	}
+	buff := make([]byte, size)
+	file.WriteAt(buff, offset)
+	return nil
 }
 
 func NameGen() string {
@@ -59,7 +120,8 @@ func CheckFile(name string) bool { // false if doesn't exist, true if exists
 
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	// expiry sanitize
-	twentyfour := int64(86400)
+	// twentyfour := int64(86400)
+	twentyfour := int64(10)
 
 	file, _, err := r.FormFile("file")
 	if err != nil {
@@ -122,8 +184,11 @@ func Cull() {
 					continue
 				}
 				if time.Now().After(time.Unix(eol, 0)) {
-					os.Remove(conf.FileFolder + "/" + string(k))
-					removed += 1
+					if err := shred(conf.FileFolder + "/" + string(k)); err != nil {
+						log.Error().Err(err).Msg("shredding failed")
+					} else {
+						removed += 1
+					}
 					c.Delete()
 				}
 			}
@@ -142,8 +207,8 @@ func main() {
 
 	err := landlock.V2.BestEffort().RestrictPaths(
 		landlock.RWDirs("./"+conf.FileFolder),
+		landlock.RWDirs(conf.Webroot),
 		landlock.RWFiles(conf.DBFile),
-		landlock.RWFiles(conf.Webroot+"/index.html"),
 	)
 
 	if err != nil {

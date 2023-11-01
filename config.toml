@@ -1,4 +1,4 @@
-webroot = "www"
+webroot = "./www"
 lport = "5000"
 vhost = "hardfiles.org"
 dbfile = "dbfile.db"

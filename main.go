@@ -120,8 +120,8 @@ func CheckFile(name string) bool { // false if doesn't exist, true if exists
 
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	// expiry sanitize
-	// twentyfour := int64(86400)
-	twentyfour := int64(10)
+	twentyfour := int64(86400)
+	// twentyfour := int64(10)
 
 	file, _, err := r.FormFile("file")
 	if err != nil {

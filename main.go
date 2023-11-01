@@ -37,19 +37,18 @@ func LoadConf() {
 	}
 }
 
-func shred(path string) error {
-	log.Info().Msg("shredding file")
+func Shred(path string) error {
 	fileinfo, err := os.Stat(path)
 	if err != nil {
 		return err
 	}
 	size := fileinfo.Size()
-	err = scramble(path, size)
+	err = Scramble(path, size)
 	if err != nil {
 		return err
 	}
 
-	err = zeros(path, size)
+	err = Zeros(path, size)
 	if err != nil {
 		return err
 	}
@@ -62,14 +61,15 @@ func shred(path string) error {
 	return nil
 }
 
-func scramble(path string, size int64) error {
+func Scramble(path string, size int64) error {
 	var i int64
 	for i = 0; i < 7; i++ { // 7 iterations
 		file, err := os.OpenFile(path, os.O_RDWR, 0)
-		defer file.Close()
 		if err != nil {
 			return err
 		}
+		defer file.Close()
+
 		offset, err := file.Seek(0, 0)
 		if err != nil {
 			return err
@@ -82,12 +82,12 @@ func scramble(path string, size int64) error {
 	return nil
 }
 
-func zeros(path string, size int64) error {
+func Zeros(path string, size int64) error {
 	file, err := os.OpenFile(path, os.O_RDWR, 0)
-	defer file.Close()
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
 	offset, err := file.Seek(0, 0)
 	if err != nil {
@@ -120,8 +120,7 @@ func CheckFile(name string) bool { // false if doesn't exist, true if exists
 
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	// expiry sanitize
-	twentyfour := int64(86400)
-	// twentyfour := int64(10)
+	twentyfour := int64(10)
 
 	file, _, err := r.FormFile("file")
 	if err != nil {
@@ -184,7 +183,7 @@ func Cull() {
 					continue
 				}
 				if time.Now().After(time.Unix(eol, 0)) {
-					if err := shred(conf.FileFolder + "/" + string(k)); err != nil {
+					if err := Shred(conf.FileFolder + "/" + string(k)); err != nil {
 						log.Error().Err(err).Msg("shredding failed")
 					} else {
 						removed += 1
@@ -195,7 +194,7 @@ func Cull() {
 			return nil
 		})
 		if removed >= 1 {
-			log.Info().Int("amount", removed).Msg("expired")
+			log.Info().Int("amount", removed).Msg("shredded")
 		}
 		time.Sleep(5 * time.Second)
 	}
@@ -206,7 +205,7 @@ func main() {
 	LoadConf()
 
 	err := landlock.V2.BestEffort().RestrictPaths(
-		landlock.RWDirs("./"+conf.FileFolder),
+		landlock.RWDirs(conf.FileFolder),
 		landlock.RWDirs(conf.Webroot),
 		landlock.RWFiles(conf.DBFile),
 	)
@@ -237,7 +236,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", UploadHandler).Methods("POST")
-	r.HandleFunc("/uploads/{name}", func(w http.ResponseWriter, r *http.Request) { // upload hits
+	r.HandleFunc("/uploads/{name}", func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		if !CheckFile(vars["name"]) {
 			w.WriteHeader(http.StatusNotFound)
@@ -248,20 +247,24 @@ func main() {
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, conf.Webroot+"/index.html")
 	}).Methods("GET")
+	r.HandleFunc("/index.html", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, conf.Webroot+"/index.html")
+	}).Methods("GET")
+	r.HandleFunc("/fist.ico", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, conf.Webroot+"/fist.ico")
+	}).Methods("GET")
 	http.Handle("/", r)
 
 	go Cull()
 
 	serv := &http.Server{
-		Addr:     ":" + conf.LPort,
-		Handler:  r,
-		ErrorLog: nil,
-		//ReadTimeout:  20 * time.Second,
-		//WriteTimeout: 20 * time.Second,
+		Addr:        ":" + conf.LPort,
+		Handler:     r,
+		ErrorLog:    nil,
 		IdleTimeout: 20 * time.Second,
 	}
 
-	log.Info().Err(err).Msg("listening...")
+	log.Info().Err(err).Msg("listening on port " + conf.LPort + "...")
 
 	if err := serv.ListenAndServe(); err != nil {
 		log.Fatal().Err(err).Msg("error starting server")

@@ -253,6 +253,9 @@ func main() {
 	r.HandleFunc("/fist.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, conf.Webroot+"/fist.ico")
 	}).Methods("GET")
+	r.HandleFunc("/header.png", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, conf.Webroot+"/header.png")
+	}).Methods("GET")
 	http.Handle("/", r)
 
 	go Cull()

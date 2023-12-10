@@ -4,3 +4,4 @@ vhost = "hardfiles.org"
 dbfile = "dbfile.db"
 filelen = 6
 folder = "files"
+fileexpiry = 86400

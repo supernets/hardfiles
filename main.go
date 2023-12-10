@@ -23,12 +23,13 @@ var (
 )
 
 type Config struct {
-	Webroot    string `toml:"webroot"`
-	LPort      string `toml:"lport"`
-	VHost      string `toml:"vhost"`
-	DBFile     string `toml:"dbfile"`
-	FileLen    int    `toml:"filelen"`
-	FileFolder string `toml:"folder"`
+	Webroot           string `toml:"webroot"`
+	LPort             string `toml:"lport"`
+	VHost             string `toml:"vhost"`
+	DBFile            string `toml:"dbfile"`
+	FileLen           int    `toml:"filelen"`
+	FileFolder        string `toml:"folder"`
+	FileExpirySeconds int    `toml:"fileexpiry"`
 }
 
 func LoadConf() {
@@ -120,7 +121,7 @@ func CheckFile(name string) bool { // false if doesn't exist, true if exists
 
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	// expiry sanitize
-	twentyfour := int64(86400)
+	twentyfour := int64(conf.FileExpirySeconds)
 
 	file, _, err := r.FormFile("file")
 	if err != nil {

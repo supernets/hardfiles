@@ -2,6 +2,7 @@ services:
   hardfiles:
     container_name: hardfiles
     image: git.supernets.org/supernets/hardfiles:latest
+    build: .
     volumes:
       - "$PWD/files:/app/files"
       - "$PWD/www:/app/www"

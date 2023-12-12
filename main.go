@@ -23,13 +23,13 @@ var (
 )
 
 type Config struct {
-	Webroot           string `toml:"webroot"`
-	LPort             string `toml:"lport"`
-	VHost             string `toml:"vhost"`
-	DBFile            string `toml:"dbfile"`
-	FileLen           int    `toml:"filelen"`
-	FileFolder        string `toml:"folder"`
-	FileExpirySeconds int    `toml:"fileexpiry"`
+	Webroot    string `toml:"webroot"`
+	LPort      string `toml:"lport"`
+	VHost      string `toml:"vhost"`
+	DBFile     string `toml:"dbfile"`
+	FileLen    int    `toml:"filelen"`
+	FileFolder string `toml:"folder"`
+	TTLSeconds int    `toml:"ttl_seconds"`
 }
 
 func LoadConf() {
@@ -44,18 +44,15 @@ func Shred(path string) error {
 		return err
 	}
 	size := fileinfo.Size()
-	err = Scramble(path, size)
-	if err != nil {
+	if err = Scramble(path, size); err != nil {
 		return err
 	}
 
-	err = Zeros(path, size)
-	if err != nil {
+	if err = Zeros(path, size); err != nil {
 		return err
 	}
 
-	err = os.Remove(path)
-	if err != nil {
+	if err = os.Remove(path); err != nil {
 		return err
 	}
 
@@ -100,7 +97,7 @@ func Zeros(path string, size int64) error {
 }
 
 func NameGen() string {
-	const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ123456789"
+	const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ0123456789"
 	ll := len(chars)
 	b := make([]byte, conf.FileLen)
 	rand.Read(b) // generates len(b) random bytes
@@ -108,6 +105,24 @@ func NameGen() string {
 		b[i] = chars[int(b[i])%ll]
 	}
 	return string(b)
+}
+
+func CheckFolder(path string) {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		err := os.Mkdir(path, 0755)
+		if err != nil {
+			log.Fatal().Err(err).Msg("unable to create folder")
+		}
+	}
+}
+
+func CheckDB(path string) {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		_, err := os.Create(path)
+		if err != nil {
+			log.Fatal().Err(err).Msg("unable to create database file")
+		}
+	}
 }
 
 func CheckFile(name string) bool { // false if doesn't exist, true if exists
@@ -120,8 +135,8 @@ func CheckFile(name string) bool { // false if doesn't exist, true if exists
 }
 
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
-	// expiry sanitize
-	twentyfour := int64(conf.FileExpirySeconds)
+	// expiry time
+	ttl := int64(conf.TTLSeconds)
 
 	file, _, err := r.FormFile("file")
 	if err != nil {
@@ -149,31 +164,33 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("expiry"))
-		err := b.Put([]byte(name), []byte(strconv.FormatInt(time.Now().Unix()+twentyfour, 10)))
+		err := b.Put([]byte(name), []byte(strconv.FormatInt(time.Now().Unix()+ttl, 10)))
 		return err
 	})
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to put expiry")
+		log.Error().Err(err).Msg("failed to put expiry")
 	}
-
-	log.Info().Int64("expiry", twentyfour).Msg("Writing new file")
 
 	f, err := os.OpenFile(conf.FileFolder+"/"+name, os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
-		log.Error().Err(err).Msg("Error opening a file for write")
+		log.Error().Err(err).Msg("error opening a file for write")
 		w.WriteHeader(http.StatusInternalServerError) // change to json
 		return
 	}
 	defer f.Close()
 
 	io.Copy(f, file)
+	log.Info().Str("name", name).Int64("ttl", ttl).Msg("wrote new file")
 
-	w.Write([]byte("https://" + conf.VHost + "/uploads/" + name))
+	hostedurl := "https://" + conf.VHost + "/uploads/" + name
+
+	w.Header().Set("Location", hostedurl)
+	w.WriteHeader(http.StatusSeeOther)
+	w.Write([]byte(hostedurl))
 }
 
 func Cull() {
 	for {
-		removed := 0
 		db.Update(func(tx *bolt.Tx) error {
 			b := tx.Bucket([]byte("expiry"))
 			c := b.Cursor()
@@ -187,16 +204,13 @@ func Cull() {
 					if err := Shred(conf.FileFolder + "/" + string(k)); err != nil {
 						log.Error().Err(err).Msg("shredding failed")
 					} else {
-						removed += 1
+						log.Info().Str("name", string(k)).Msg("shredded file")
 					}
 					c.Delete()
 				}
 			}
 			return nil
 		})
-		if removed >= 1 {
-			log.Info().Int("amount", removed).Msg("shredded")
-		}
 		time.Sleep(5 * time.Second)
 	}
 }
@@ -204,6 +218,9 @@ func Cull() {
 func main() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	LoadConf()
+
+	CheckFolder(conf.FileFolder)
+	CheckDB(conf.DBFile)
 
 	err := landlock.V2.BestEffort().RestrictPaths(
 		landlock.RWDirs(conf.FileFolder),
@@ -217,9 +234,9 @@ func main() {
 
 	_, err = os.Open("/etc/passwd")
 	if err == nil {
-		log.Warn().Msg("landlock failed, could open /etc/passwd")
+		log.Warn().Msg("landlock failed, could open /etc/passwd, are you on a 5.13+ kernel?")
 	} else {
-		log.Info().Err(err).Msg("Landlocked")
+		log.Info().Err(err).Msg("landlocked")
 	}
 
 	db, err = bolt.Open(conf.DBFile, 0600, nil)
@@ -241,21 +258,21 @@ func main() {
 		vars := mux.Vars(r)
 		if !CheckFile(vars["name"]) {
 			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("file not found"))
 		} else {
 			http.ServeFile(w, r, conf.FileFolder+"/"+vars["name"])
 		}
 	}).Methods("GET")
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, conf.Webroot+"/index.html")
-	}).Methods("GET")
-	r.HandleFunc("/index.html", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, conf.Webroot+"/index.html")
-	}).Methods("GET")
-	r.HandleFunc("/fist.ico", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, conf.Webroot+"/fist.ico")
-	}).Methods("GET")
-	r.HandleFunc("/header.png", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, conf.Webroot+"/header.png")
+	})
+	r.HandleFunc("/{file}", func(w http.ResponseWriter, r *http.Request) {
+		file := mux.Vars(r)["file"]
+		if _, err := os.Stat(conf.Webroot + "/" + file); os.IsNotExist(err) {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		} else {
+			http.ServeFile(w, r, conf.Webroot+"/"+file)
+		}
 	}).Methods("GET")
 	http.Handle("/", r)
 
@@ -268,6 +285,7 @@ func main() {
 		IdleTimeout: 20 * time.Second,
 	}
 
+	log.Warn().Msg("shredding is only effective on HDD volumes")
 	log.Info().Err(err).Msg("listening on port " + conf.LPort + "...")
 
 	if err := serv.ListenAndServe(); err != nil {

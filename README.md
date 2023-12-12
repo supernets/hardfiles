@@ -34,7 +34,6 @@ Start by adjusting the necessary configuration variables in `config.toml`.
 Execute the following commands to build and initiate HardFiles:
 ```
 go build -o hardfiles main.go
-mkdir files
 ./hardfiles
 ```
 
@@ -46,7 +45,8 @@ docker compose up -d
 ```
 
 #### 3. Default Port:
-By default, HardFiles listens on port `5000`. For production environments, it's recommended to use a robust web server like Nginx or Apache to proxy traffic to this port.
+
+By default, HardFiles listens on port `5000`. For production environments, it's recommended to use a robust web server like Nginx or Caddy to proxy traffic to this port. Just don't use Apache ever.
 
 ###### Using Nginx as a Reverse Proxy:
 
@@ -62,8 +62,10 @@ server {
     location / {
         proxy_pass http://localhost:5000;
         proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
     }
+
+    access_log /dev/null;
+    error_log /dev/null;
 
     listen 443 ssl;
     ssl_certificate /etc/letsencrypt/live/your_domain.com/fullchain.pem;
@@ -77,21 +79,38 @@ For obtaining the Let's Encrypt certificates, you can use tools like `certbot` t
 
 Remember, by using a reverse proxy, you can run HardFiles without needing root privileges and maintain a more secure environment.
 
+###### Using Caddy as a Reverse Proxy:
+
+```caddy
+your_domain.com {
+    reverse_proxy localhost:5000
+
+    tls /etc/letsencrypt/live/your_domain.com/fullchain.pem /etc/letsencrypt/live/your_domain.com/privkey.pem
+
+    log {
+        output discard
+    }
+}
+```
+
 ## cURL Uploads & Bash Alias
 
 If you frequently upload files to HardFiles via the command line, you can streamline the process by setting up a bash alias. This allows you to use a simple command, like `upload`, to push your files to HardFiles using `curl`.
 
 #### Setting Up:
+
 1. **Edit your `.bashrc` file:** Open your `~/.bashrc` file in a text editor. You can use `nano` or `vim` for this purpose:
 ```shell
 nano ~/.bashrc
 ```
+
 2. **Add the `upload` function:** At the end of the `.bashrc` file, append the following function (replace the domain if you are running your own instance):
 ```shell
 upload() {
     curl -F file=@$1 https://hardfiles.org/
 }
 ```
+
 3. Reload your .bashrc file: To make the new function available in your current session, reload your .bashrc:
 ```shell
 source ~/.bashrc

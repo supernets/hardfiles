@@ -107,30 +107,10 @@ func NameGen() string {
 	return string(b)
 }
 
-func CheckFolder(path string) {
+func Exists(path string) bool {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		err := os.Mkdir(path, 0755)
-		if err != nil {
-			log.Fatal().Err(err).Msg("unable to create folder")
-		}
-	}
-}
-
-func CheckDB(path string) {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		_, err := os.Create(path)
-		if err != nil {
-			log.Fatal().Err(err).Msg("unable to create database file")
-		}
-	}
-}
-
-func CheckFile(name string) bool { // false if doesn't exist, true if exists
-	tfd, err := os.Open(conf.FileFolder + "/" + name)
-	if err != nil {
 		return false
 	}
-	tfd.Close()
 	return true
 }
 
@@ -157,7 +137,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	for {
 		id := NameGen()
 		name = id + mtype.Extension()
-		if !CheckFile(name) {
+		if !Exists(conf.FileFolder + "/" + name) {
 			break
 		}
 	}
@@ -219,9 +199,16 @@ func main() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	LoadConf()
 
-	CheckFolder(conf.FileFolder)
-	CheckDB(conf.DBFile)
-
+	if !Exists(conf.FileFolder) {
+		if err := os.Mkdir(conf.FileFolder, 0755); err != nil {
+			log.Fatal().Err(err).Msg("unable to create folder")
+		}
+	}
+	if !Exists(conf.DBFile) {
+		if _, err := os.Create(conf.DBFile); err != nil {
+			log.Fatal().Err(err).Msg("unable to create database file")
+		}
+	}
 	err := landlock.V2.BestEffort().RestrictPaths(
 		landlock.RWDirs(conf.FileFolder),
 		landlock.RWDirs(conf.Webroot),
@@ -256,7 +243,7 @@ func main() {
 	r.HandleFunc("/", UploadHandler).Methods("POST")
 	r.HandleFunc("/uploads/{name}", func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		if !CheckFile(vars["name"]) {
+		if !Exists(conf.FileFolder + "/" + vars["name"]) {
 			w.WriteHeader(http.StatusNotFound)
 			w.Write([]byte("file not found"))
 		} else {

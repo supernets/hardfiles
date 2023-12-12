@@ -124,9 +124,6 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	var expiryTime int64
 	var fileNameLength int
 
-	fileNameLength = 0
-	expiryTime = 0
-
 	file, _, err := r.FormFile("file")
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -153,10 +150,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-	}
-
-	// Default to conf if not present
-	if expiryTime == 0 {
+	} else {
 		expiryTime = int64(conf.FileExpirySeconds)
 	}
 
@@ -172,10 +166,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-	}
-
-	// Default to conf if not present
-	if fileNameLength == 0 {
+	} else {
 		fileNameLength = conf.FileLen
 	}
 

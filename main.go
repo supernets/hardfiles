@@ -276,6 +276,11 @@ func main() {
 		return nil
 	})
 
+	// Create the files directory if it doesn't already exist
+	if _, err := os.Stat(conf.FileFolder); os.IsNotExist(err) {
+		os.Mkdir(conf.FileFolder, 0755)
+	}
+
 	r := mux.NewRouter()
 	r.HandleFunc("/", UploadHandler).Methods("POST")
 	r.HandleFunc("/uploads/{name}", func(w http.ResponseWriter, r *http.Request) {

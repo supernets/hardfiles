@@ -16,7 +16,7 @@ HardFiles is built on the principle of flexibility. If you choose to run your ow
 
 ## Deployment Guide for HardFiles
 
-#### 1. Clone this repository
+### 1. Clone this repository
 
 This is necessary even when using the Docker image as the image does not contain the HardFiles frontend.
 
@@ -24,12 +24,12 @@ This is necessary even when using the Docker image as the image does not contain
 git clone https://git.supernets.org/supernets/hardfiles.git
 ```
 
-#### 2. Configuration:
+### 2. Configuration:
 Start by adjusting the necessary configuration variables in `config.toml`.
 
-#### 3. Build and Run 
+### 3. Build and Run 
 
-##### Bare Metal:
+#### Bare Metal:
 
 Execute the following commands to build and initiate HardFiles:
 ```shell
@@ -37,14 +37,14 @@ go build -o hardfiles main.go
 ./hardfiles
 ```
 
-##### Docker Compose:
+#### Docker Compose:
 
 Execute the following commands to build and initiate HardFiles in Docker:
 ```shell
 docker compose up -d
 ```
 
-#### 3. Web Server Configuration:
+### 3. Web Server Configuration:
 
 By default, HardFiles listens on port `5000`. For production environments, it's recommended to use a robust web server like Nginx or Caddy to proxy traffic to this port.
 
@@ -52,7 +52,7 @@ For obtaining the Let's Encrypt certificates, you can use tools like `certbot` t
 
 Remember, by using a reverse proxy, you can run HardFiles without needing root privileges and maintain a more secure environment.
 
-###### Using Nginx as a Reverse Proxy:
+#### Using Nginx as a Reverse Proxy:
 
 A reverse proxy takes requests from the Internet and forwards them to servers in an internal network. By doing so, it ensures that the actual application (in this case, HardFiles) doesn't need to run with root privileges or directly face the Internet, which is a security best practice.
 
@@ -77,7 +77,7 @@ server {
 
 Replace `your_domain.com` with your actual domain name. Save this configuration to a file, say `hardfiles.conf`, inside the `/etc/nginx/sites-available/` directory, and then create a symbolic link to `/etc/nginx/sites-enabled/`. Restart Nginx after this setup.
 
-###### Using Caddy as a Reverse Proxy:
+#### Using Caddy as a Reverse Proxy:
 
 Append the following to the Caddyfile, replacing your_domain.com with your chosen domain.
 

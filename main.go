@@ -97,7 +97,7 @@ func Zeros(path string, size int64) error {
 }
 
 func NameGen(fileNameLength int) string {
-	const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ0123456789-_"
+	const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ0123456789"
 	ll := len(chars)
 	b := make([]byte, fileNameLength)
 	rand.Read(b) // generates len(b) random bytes

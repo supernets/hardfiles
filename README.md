@@ -20,7 +20,7 @@ HardFiles is built on the principle of flexibility. If you choose to run your ow
 
 This is necessary even when using the Docker image as the image does not contain the HardFiles frontend.
 
-```
+```shell
 git clone https://git.supernets.org/supernets/hardfiles.git
 ```
 
@@ -32,21 +32,25 @@ Start by adjusting the necessary configuration variables in `config.toml`.
 ##### Bare Metal:
 
 Execute the following commands to build and initiate HardFiles:
-```
+```shell
 go build -o hardfiles main.go
-mkdir files
 ./hardfiles
 ```
 
 ##### Docker Compose:
 
 Execute the following commands to build and initiate HardFiles in Docker:
-```
+```shell
 docker compose up -d
 ```
 
-#### 3. Default Port:
-By default, HardFiles listens on port `5000`. For production environments, it's recommended to use a robust web server like Nginx or Apache to proxy traffic to this port.
+#### 3. Web Server Configuration:
+
+By default, HardFiles listens on port `5000`. For production environments, it's recommended to use a robust web server like Nginx or Caddy to proxy traffic to this port.
+
+For obtaining the Let's Encrypt certificates, you can use tools like `certbot` that automatically handle the certification process for you. If you elect to use Caddy, in most circumstances it is able to handle certificates for you using Let's Encrypt.
+
+Remember, by using a reverse proxy, you can run HardFiles without needing root privileges and maintain a more secure environment.
 
 ###### Using Nginx as a Reverse Proxy:
 
@@ -73,25 +77,48 @@ server {
 
 Replace `your_domain.com` with your actual domain name. Save this configuration to a file, say `hardfiles.conf`, inside the `/etc/nginx/sites-available/` directory, and then create a symbolic link to `/etc/nginx/sites-enabled/`. Restart Nginx after this setup.
 
-For obtaining the Let's Encrypt certificates, you can use tools like `certbot` that automatically handle the certification process for you.
+###### Using Caddy as a Reverse Proxy:
 
-Remember, by using a reverse proxy, you can run HardFiles without needing root privileges and maintain a more secure environment.
+Append the following to the Caddyfile, replacing your_domain.com with your chosen domain.
 
-## cURL Uploads & Bash Alias
+```caddy
+your_domain.com {
+    reverse_proxy localhost:5000
+}
+```
+
+## cURL Uploads
+
+You can upload files using cURL like so:
+
+```shell
+curl -F file=@$1 https://hardfiles.org/
+```
+
+Additionally, you can append some extra options to modify the expiry time or file name length. Currently the file expiry time must be provided in seconds and is limited to 5 days maximum. The file name length is limited to 128 characters. The following example will return a file that expires in 48 hours rather than the default 24 and a file name length of 64 characters:
+
+```shell
+curl -F file=@$1 -F expiry=172800 -F url_len=64 https://hardfiles.org/
+```
+
+### Bash Alias
 
 If you frequently upload files to HardFiles via the command line, you can streamline the process by setting up a bash alias. This allows you to use a simple command, like `upload`, to push your files to HardFiles using `curl`.
 
 #### Setting Up:
+
 1. **Edit your `.bashrc` file:** Open your `~/.bashrc` file in a text editor. You can use `nano` or `vim` for this purpose:
 ```shell
 nano ~/.bashrc
 ```
+
 2. **Add the `upload` function:** At the end of the `.bashrc` file, append the following function (replace the domain if you are running your own instance):
 ```shell
 upload() {
     curl -F file=@$1 https://hardfiles.org/
 }
 ```
+
 3. Reload your .bashrc file: To make the new function available in your current session, reload your .bashrc:
 ```shell
 source ~/.bashrc
@@ -99,6 +126,7 @@ source ~/.bashrc
 
 #### Usage:
 Now, you can easily upload files to HardFiles using the upload command followed by the path to your file. For example:
+
 ```shell
 upload /path/to/your/file.jpg
 ```
@@ -106,7 +134,7 @@ upload /path/to/your/file.jpg
 This will upload the specified file to HardFiles and return a direct link to the file.
 
 ## Roadmap
-- Idea - Uploads stored on a remotely mounted drive, isolating them from the actual service server. Multiple mirrored instances behind a round robin reading from the same remote mount for scaling.
+- Idea - Uploads stored on a remotely mounted drive or S3 compatible volume, isolating them from the actual service server. Multiple mirrored instances behind a round robin reading from the same remote mount for scaling.
 - Random wallpapers as an optional extra, kept simple without javascript. Maybe a local shell script that modifies the index.html on a timer.
 - Fix index wallpaper alignment on smartphones.
 - Clean up CSS.
@@ -116,7 +144,7 @@ This will upload the specified file to HardFiles and return a direct link to the
 
 ## Credits
 - 🚀 **delorean**, our Senior Director of IRC Diplomacy & SuperNets Brand Strategy 🌐 for developing hardfiles.
-- 🤝 **hgw7**, our  Principal Designer of Digital Aquariums & Rare Fish Showcases 🐠 for branding the product.
+- 🤝 **hgw**, our  Principal Designer of Digital Aquariums & Rare Fish Showcases 🐠 for branding the product.
 - 💼 **acidvegas**, our Global Director of IRC Communications 💬 for funding the project 💰.
 
 ___

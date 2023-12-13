@@ -4,4 +4,5 @@ vhost = "hardfiles.org"
 dbfile = "dbfile.db"
 filelen = 6
 folder = "files"
-ttl_seconds = 86400
+default_ttl = 86400
+maximum_ttl = 432000

@@ -29,7 +29,8 @@ type Config struct {
 	DBFile     string `toml:"dbfile"`
 	FileLen    int    `toml:"filelen"`
 	FileFolder string `toml:"folder"`
-	TTLSeconds int    `toml:"ttl_seconds"`
+	DefaultTTL int    `toml:"default_ttl"`
+	MaxTTL     int    `toml:"maximum_ttl"`
 }
 
 func LoadConf() {
@@ -144,8 +145,8 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Error().Err(err).Msg("expiry could not be parsed")
 		} else {
-			// 5 days max
-			if ttl < 1 || ttl > 432000 {
+			// Get maximum ttl length from config and kill upload if specified ttl is too long, this can probably be handled better in the future
+			if ttl < 1 || ttl > int64(conf.MaxTTL) {
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
@@ -154,7 +155,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Default to conf if not present
 	if ttl == 0 {
-		ttl = int64(conf.TTLSeconds)
+		ttl = int64(conf.DefaultTTL)
 	}
 
 	// Check if the file length parameter exists and also if it's too long

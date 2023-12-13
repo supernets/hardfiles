@@ -96,12 +96,12 @@ func Zeros(path string, size int64) error {
 	return nil
 }
 
-func NameGen() string {
-	const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ0123456789"
+func NameGen(fileNameLength int) string {
+	const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ0123456789-_"
 	ll := len(chars)
-	b := make([]byte, conf.FileLen)
+	b := make([]byte, fileNameLength)
 	rand.Read(b) // generates len(b) random bytes
-	for i := int64(0); i < int64(conf.FileLen); i++ {
+	for i := int64(0); i < int64(fileNameLength); i++ {
 		b[i] = chars[int(b[i])%ll]
 	}
 	return string(b)
@@ -116,7 +116,12 @@ func Exists(path string) bool {
 
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	// expiry time
-	ttl := int64(conf.TTLSeconds)
+	var name string
+	var ttl int64
+	var fileNameLength int
+
+	fileNameLength = 0
+	ttl = 0
 
 	file, _, err := r.FormFile("file")
 	if err != nil {
@@ -132,10 +137,49 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	file.Seek(0, 0)
 
+
+	// Check if expiry time is present and length is too long
+	if r.PostFormValue("expiry") != "" {
+		ttl, err = strconv.ParseInt(r.PostFormValue("expiry"), 10, 64)
+		if err != nil {
+			log.Error().Err(err).Msg("expiry could not be parsed")
+		} else {
+			// 5 days max
+			if ttl < 1 || ttl > 432000 {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+		}
+	}
+
+	// Default to conf if not present
+	if ttl == 0 {
+		ttl = int64(conf.TTLSeconds)
+	}
+
+	// Check if the file length parameter exists and also if it's too long
+	if r.PostFormValue("url_len") != "" {
+		fileNameLength, err = strconv.Atoi(r.PostFormValue("url_len"))
+		if err != nil {
+			log.Error().Err(err).Msg("url_len could not be parsed")
+		} else {
+			// if the length is < 3 and > 128 return error
+			if fileNameLength < 3 || fileNameLength > 128 {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+		}
+	}
+
+	// Default to conf if not present
+	if fileNameLength == 0 {
+		fileNameLength = conf.FileLen
+	}
+
+
 	// generate + check name
-	var name string
 	for {
-		id := NameGen()
+		id := NameGen(fileNameLength)
 		name = id + mtype.Extension()
 		if !Exists(conf.FileFolder + "/" + name) {
 			break

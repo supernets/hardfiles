@@ -61,22 +61,20 @@ func Shred(path string) error {
 }
 
 func Scramble(path string, size int64) error {
-	var i int64
-	for i = 0; i < 7; i++ { // 7 iterations
-		file, err := os.OpenFile(path, os.O_RDWR, 0)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
+	file, err := os.OpenFile(path, os.O_RDWR, 0)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 
-		offset, err := file.Seek(0, 0)
-		if err != nil {
+	for i := 0; i < 7; i++ { // 7 iterations
+		buff := make([]byte, size)
+		if _, err := rand.Read(buff); err != nil {
 			return err
 		}
-		buff := make([]byte, size)
-		rand.Read(buff)
-		file.WriteAt(buff, offset)
-		file.Close()
+		if _, err := file.WriteAt(buff, 0); err != nil {
+			return err
+		}
 	}
 	return nil
 }

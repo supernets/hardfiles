@@ -1,8 +1,8 @@
 package main
 
 import (
+	"crypto/rand"
 	"io"
-	"math/rand"
 	"net/http"
 	"os"
 	"strconv"
@@ -138,7 +138,6 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	file.Seek(0, 0)
 
-
 	// Check if expiry time is present and length is too long
 	if r.PostFormValue("expiry") != "" {
 		ttl, err = strconv.ParseInt(r.PostFormValue("expiry"), 10, 64)
@@ -176,7 +175,6 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	if fileNameLength == 0 {
 		fileNameLength = conf.FileLen
 	}
-
 
 	// generate + check name
 	for {

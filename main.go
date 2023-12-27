@@ -86,12 +86,8 @@ func Zeros(path string, size int64) error {
 	}
 	defer file.Close()
 
-	offset, err := file.Seek(0, 0)
-	if err != nil {
-		return err
-	}
 	buff := make([]byte, size)
-	file.WriteAt(buff, offset)
+	file.WriteAt(buff, 0)
 	return nil
 }
 

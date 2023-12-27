@@ -7,6 +7,8 @@ We designed HardFiles with a singular vision: to simplify and secure the process
 
 🛑 **No logs 📜, no tracking 👣, & no analytics!** 📊🚫
 
+🚷 **No weird anime girls or cringe weeb stuff on the homepage** 📵🚫
+
 🔒 **All uploads are shredded securely ✂️🔥 after 24 hours** ⏳🗑️
 
 ## Terms of Service

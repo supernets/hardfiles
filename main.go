@@ -91,12 +91,12 @@ func Zeros(path string, size int64) error {
 	return nil
 }
 
-func NameGen(fileNameLength int) string {
+func NameGen() string {
 	const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ0123456789"
 	ll := len(chars)
-	b := make([]byte, fileNameLength)
+	b := make([]byte, conf.FileLen)
 	rand.Read(b) // generates len(b) random bytes
-	for i := int64(0); i < int64(fileNameLength); i++ {
+	for i := int64(0); i < int64(conf.FileLen); i++ {
 		b[i] = chars[int(b[i])%ll]
 	}
 	return string(b)
@@ -113,9 +113,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	// expiry time
 	var name string
 	var ttl int64
-	var fileNameLength int
 
-	fileNameLength = 0
 	ttl = 0
 
 	file, _, err := r.FormFile("file")
@@ -151,28 +149,9 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		ttl = int64(conf.DefaultTTL)
 	}
 
-	// Check if the file length parameter exists and also if it's too long
-	if r.PostFormValue("url_len") != "" {
-		fileNameLength, err = strconv.Atoi(r.PostFormValue("url_len"))
-		if err != nil {
-			log.Error().Err(err).Msg("url_len could not be parsed")
-		} else {
-			// if the length is < 3 and > 128 return error
-			if fileNameLength < 3 || fileNameLength > 128 {
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
-		}
-	}
-
-	// Default to conf if not present
-	if fileNameLength == 0 {
-		fileNameLength = conf.FileLen
-	}
-
 	// generate + check name
 	for {
-		id := NameGen(fileNameLength)
+		id := NameGen()
 		name = id + mtype.Extension()
 		if !Exists(conf.FileFolder + "/" + name) {
 			break

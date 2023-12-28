@@ -97,10 +97,10 @@ You can upload files using cURL like so:
 curl -F file=@$1 https://hardfiles.org/
 ```
 
-Additionally, you can append some extra options to modify the expiry time or file name length. Currently the file expiry time must be provided in seconds and is limited to 5 days maximum. The file name length is limited to 128 characters. The following example will return a file that expires in 48 hours rather than the default 24 and a file name length of 64 characters:
+Additionally, you can specify the amount of time before your upload is removed from the server. Currently the file expiry time must be provided in seconds and is limited to 5 days maximum. The following example will return a file that expires in 48 hours rather than the default of 24 hours.
 
 ```shell
-curl -F file=@$1 -F expiry=172800 -F url_len=64 https://hardfiles.org/
+curl -F file=@$1 -F expiry=172800 https://hardfiles.org/
 ```
 
 ### Bash Alias

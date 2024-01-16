@@ -215,18 +215,18 @@ func main() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	LoadConf()
 
+	var err error
 	if !Exists(conf.FileFolder) {
-		if err := os.Mkdir(conf.FileFolder, 0755); err != nil {
+		if err = os.Mkdir(conf.FileFolder, 0755); err != nil {
 			log.Fatal().Err(err).Msg("unable to create folder")
 		}
 	}
 	if !Exists(conf.DBFile) {
-		if _, err := os.Create(conf.DBFile); err != nil {
+		if _, err = os.Create(conf.DBFile); err != nil {
 			log.Fatal().Err(err).Msg("unable to create database file")
 		}
 	}
-
-	if err := landlock.V2.BestEffort().RestrictPaths(
+	if err = landlock.V2.BestEffort().RestrictPaths(
 		landlock.RWDirs(conf.FileFolder),
 		landlock.RWDirs(conf.Webroot),
 		landlock.RWFiles(conf.DBFile),
@@ -234,14 +234,13 @@ func main() {
 		log.Warn().Err(err).Msg("could not landlock")
 	}
 
-	if _, err := os.Open("/etc/passwd"); err != nil {
+	if _, err = os.Open("/etc/passwd"); err == nil {
 		log.Warn().Msg("landlock failed, could open /etc/passwd, are you on a 5.13+ kernel?")
 	} else {
 		log.Info().Err(err).Msg("landlocked")
 	}
 
-	db, err := bolt.Open(conf.DBFile, 0600, nil)
-	if err != nil {
+	if db, err = bolt.Open(conf.DBFile, 0600, nil); err != nil {
 		log.Fatal().Err(err).Msg("unable to open database file")
 	}
 	db.Update(func(tx *bolt.Tx) error {

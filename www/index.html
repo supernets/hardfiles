@@ -1,126 +1,225 @@
 <!DOCTYPE html>
 <html style="overflow: hidden;">
     <head>
-	<script type="text/javascript" src="//code.jquery.com/jquery-1.10.2.min.js"></script>
+        <script type="text/javascript" src="//code.jquery.com/jquery-1.10.2.min.js"></script>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" href="fist.ico"> 
+        <link rel="icon" href="fist.ico">
         <title>HARDFILES</title>
         <style>
-            body {
-            font-family: sans-serif;
-            background-image: url('https://media.tenor.com/fYnd0R6F-0UAAAAC/gun-revolver.gif');
-            background-size: cover;
+             body {
+                 font-family: sans-serif;
+                 background-image: url('https://media.tenor.com/fYnd0R6F-0UAAAAC/gun-revolver.gif');
+                 background-size: cover;
+                 background-position: center;
             }
-            @media (prefers-color-scheme: dark) {
-            body {
-            overflow: hidden;
-            background: black;
-            background-image: url('https://media.tenor.com/fYnd0R6F-0UAAAAC/gun-revolver.gif');
-            background-size: cover;
-            background-position: center;
-            color: white;
+             @media (prefers-color-scheme: dark) {
+                 body {
+                     overflow: hidden;
+                     background: black;
+                     background-image: url('https://media.tenor.com/fYnd0R6F-0UAAAAC/gun-revolver.gif');
+                     background-size: cover;
+                     background-position: center;
+                     color: white;
+                }
             }
+             .container {
+                 padding-right: 15px;
+                 padding-left: 15px;
+                 margin-right: auto;
+                 margin-left: auto;
+                 display: flex;
+                 flex-direction: column;
+                 align-items: center;
+                 justify-content: center;
+                 height: 100vh;
             }
-            .container {
-            padding-right: 15px;
-            padding-left: 15px;
-            margin-right: auto;
-            margin-left: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            }
-            @media (min-width: 768px) {
-            .container {
-            width: 750px;
-            }
-            .hf {
-                font-size: 3rem;
-            }
-            }
-            @media (min-width: 992px) {
-            .container {
-            width: 970px;
-            }
+             @media (min-width: 768px) {
+                 .container {
+                     width: 750px;
+                }
+                 .hf {
+                     font-size: 3rem;
+                }
 
+                 .hflogo {
+                    width: 50% !important;
+                 }
             }
-            @media (min-width: 1200px) {
-            .container {
-            width: 1170px;
+             @media (min-width: 992px) {
+                 .container {
+                     width: 970px;
+                }
             }
-            .hf {
-                font-size: 5rem;
+             @media (min-width: 1200px) {
+                 .container {
+                     width: 1170px;
+                }
+                 .hf {
+                     font-size: 5rem;
+                }
             }
+             input,select {
+                 margin-bottom: 1em;
             }
-            input,select {
-            margin-bottom: 1em;
+             .file-upload{
+                display:block;
+                text-align:center;
+                font-family: Helvetica, Arial, sans-serif;
+                font-size: 12px;
+                 width: 300px;
             }
-            .file-upload{display:block;text-align:center;font-family: Helvetica, Arial, sans-serif;font-size: 12px; width: 300px;}
-            .file-upload .file-select{display:block;border: 2px solid #dce4ec;color: black;cursor:pointer;height:40px;line-height:40px;text-align:left;background:#FFFFFF;overflow:hidden;position:relative;}
-            .file-upload .file-select .file-select-button{background:#dce4ec;padding:0 10px;display:inline-block;height:40px;line-height:40px;}
-            .file-upload .file-select .file-select-name{line-height:40px;display:inline-block;padding:0 10px;}
-            .file-upload .file-select:hover{border-color:red;transition:all .2s ease-in-out;-moz-transition:all .2s ease-in-out;-webkit-transition:all .2s ease-in-out;-o-transition:all .2s ease-in-out;}
-            .file-upload .file-select:hover .file-select-button{background:red;color:#FFFFFF;transition:all .2s ease-in-out;-moz-transition:all .2s ease-in-out;-webkit-transition:all .2s ease-in-out;-o-transition:all .2s ease-in-out;}
-            .file-upload.active .file-select{border-color:red;transition:all .2s ease-in-out;-moz-transition:all .2s ease-in-out;-webkit-transition:all .2s ease-in-out;-o-transition:all .2s ease-in-out;}
-            .file-upload.active .file-select .file-select-button{background:red;color:#FFFFFF;transition:all .2s ease-in-out;-moz-transition:all .2s ease-in-out;-webkit-transition:all .2s ease-in-out;-o-transition:all .2s ease-in-out;}
-            .file-upload .file-select input[type=file]{z-index:100;cursor:pointer;position:absolute;height:100%;width:100%;top:0;left:0;opacity:0;filter:alpha(opacity=0);}
-            .file-upload .file-select.file-select-disabled{opacity:0.65;}
-            .file-upload .file-select.file-select-disabled:hover{cursor:default;display:block;border: 2px solid #dce4ec;color: red;cursor:pointer;height:40px;line-height:40px;margin-top:5px;text-align:left;background:#FFFFFF;overflow:hidden;position:relative;}
-            .file-upload .file-select.file-select-disabled:hover .file-select-button{background:#dce4ec;color:#666666;padding:0 10px;display:inline-block;height:40px;line-height:40px;}
-            .file-upload .file-select.file-select-disabled:hover .file-select-name{line-height:40px;display:inline-block;padding:0 10px;}
-            .subform {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+             .file-upload .file-select{
+                display:block;
+                border: 2px solid #dce4ec;
+                color: black;
+                cursor:pointer;
+                height:40px;
+                line-height:40px;
+                text-align:left;
+                background:#FFFFFF;
+                overflow:hidden;
+                position:relative;
             }
-            button {
-            display: inline-block;
-            border: 0;
-            outline: 0;
-            margin: 0;
-            padding: 15px;
-            height: 44px;
-            color: #fff;
-            font: 19px/15px 'Oswald', 'HelveticaNeue', 'Helvetica Neue', Helvetica, Arial, "Lucida Grande", sans-serif;
-            font-weight: bold;
-            text-transform: uppercase;
-            cursor: pointer;
-            -webkit-border-radius: 3px;
-            -moz-border-radius: 3px;
-            border-radius: 3px;
-            -webkit-box-sizing: border-box;     /* Safari/Chrome, other WebKit */
-            -moz-box-sizing: border-box;     /* Firefox, other Gecko */
-            box-sizing: border-box;     /* Opera/IE 8+ */
-            -webkit-font-smoothing:antialiased;
-            -webkit-text-size-adjust:none;
-            box-shadow: 0 1px 2px rgba(0,0,0,.15);
+             .file-upload .file-select .file-select-button{
+                background:#dce4ec;
+                padding:0 10px;
+                display:inline-block;
+                height:40px;
+                line-height:40px;
             }
-            button:hover {
-            background: #c93c1d;
-            -webkit-transition:all .25s ease-in-out;
-            -moz-transition:all .25s ease-in-out;
-            -o-transition:all .25s ease-in-out;
-            transition:all .25s ease-in-out; 
+             .file-upload .file-select .file-select-name{
+                line-height:40px;
+                display:inline-block;
+                padding:0 10px;
             }
-            button:active {
-            background: #ae3318;
+             .file-upload .file-select:hover{
+                border-color:red;
+                transition:all .2s ease-in-out;
+                -moz-transition:all .2s ease-in-out;
+                -webkit-transition:all .2s ease-in-out;
+                -o-transition:all .2s ease-in-out;
             }
-            button.light {
-            background: #fff;
-            color: #555759;
+             .file-upload .file-select:hover .file-select-button{
+                background:red;
+                color:#FFFFFF;
+                transition:all .2s ease-in-out;
+                -moz-transition:all .2s ease-in-out;
+                -webkit-transition:all .2s ease-in-out;
+                -o-transition:all .2s ease-in-out;
             }
-            button.light:hover {
-            background: red;
-            color: #fff;
+             .file-upload.active .file-select{
+                border-color:red;
+                transition:all .2s ease-in-out;
+                -moz-transition:all .2s ease-in-out;
+                -webkit-transition:all .2s ease-in-out;
+                -o-transition:all .2s ease-in-out;
+            }
+             .file-upload.active .file-select .file-select-button{
+                background:red;
+                color:#FFFFFF;
+                transition:all .2s ease-in-out;
+                -moz-transition:all .2s ease-in-out;
+                -webkit-transition:all .2s ease-in-out;
+                -o-transition:all .2s ease-in-out;
+            }
+             .file-upload .file-select input[type=file]{
+                z-index:100;
+                cursor:pointer;
+                position:absolute;
+                height:100%;
+                width:100%;
+                top:0;
+                left:0;
+                opacity:0;
+                filter:alpha(opacity=0);
+            }
+             .file-upload .file-select.file-select-disabled{
+                opacity:0.65;
+            }
+             .file-upload .file-select.file-select-disabled:hover{
+                cursor:default;
+                display:block;
+                border: 2px solid #dce4ec;
+                color: red;
+                cursor:pointer;
+                height:40px;
+                line-height:40px;
+                margin-top:5px;
+                text-align:left;
+                background:#FFFFFF;
+                overflow:hidden;
+                position:relative;
+            }
+             .file-upload .file-select.file-select-disabled:hover .file-select-button{
+                background:#dce4ec;
+                color:#666666;
+                padding:0 10px;
+                display:inline-block;
+                height:40px;
+                line-height:40px;
+            }
+             .file-upload .file-select.file-select-disabled:hover .file-select-name{
+                line-height:40px;
+                display:inline-block;
+                padding:0 10px;
+            }
+             .subform {
+                 display: flex;
+                 flex-direction: column;
+                 align-items: center;
+            }
+             button {
+                 display: inline-block;
+                 border: 0;
+                 outline: 0;
+                 margin: 0;
+                 padding: 15px;
+                 height: 44px;
+                 color: #fff;
+                 font: 19px/15px 'Oswald', 'HelveticaNeue', 'Helvetica Neue', Helvetica, Arial, "Lucida Grande", sans-serif;
+                 font-weight: bold;
+                 text-transform: uppercase;
+                 cursor: pointer;
+                 -webkit-border-radius: 3px;
+                 -moz-border-radius: 3px;
+                 border-radius: 3px;
+                 -webkit-box-sizing: border-box;
+                /* Safari/Chrome, other WebKit */
+                 -moz-box-sizing: border-box;
+                /* Firefox, other Gecko */
+                 box-sizing: border-box;
+                /* Opera/IE 8+ */
+                 -webkit-font-smoothing:antialiased;
+                 -webkit-text-size-adjust:none;
+                 box-shadow: 0 1px 2px rgba(0,0,0,.15);
+            }
+             button:hover {
+                 background: #c93c1d;
+                 -webkit-transition:all .25s ease-in-out;
+                 -moz-transition:all .25s ease-in-out;
+                 -o-transition:all .25s ease-in-out;
+                 transition:all .25s ease-in-out;
+            }
+             button:active {
+                 background: #ae3318;
+            }
+             button.light {
+                 background: #fff;
+                 color: #555759;
+            }
+             button.light:hover {
+                 background: red;
+                 color: #fff;
+            }
+             .hflogo {
+                width: 90%;
             }
         </style>
     </head>
     <body>
         <div class="container">
-            <img src="header.png" width="50%" alt="supernets" style="margin-top: 10rem;">
-            <h2 style="font-size: 1em; color: #ffffff; font-weight: 200;">curl -F file=@example.png https://hardfiles.org/</h1>
+            <img src="header.png" class="hflogo" alt="supernets" style="margin-top: 10rem;">
+            <h2 style="font-size: 1rem; color: #ffffff; font-weight: 200;">curl -F file=@example.png https://hardfiles.org/</h1>
             <form method="POST" class="subform" enctype="multipart/form-data">
                 <div class="file-upload" style="display: flex; justify-content: center; width: 25rem;">
                     <div class="file-select" style="width: 100%;">
@@ -132,29 +231,26 @@
                 </div>
             </form>
             <p style="color: white; font-weight: 300;">⚠️ Uploads are erased after 24 hours</p>
-            
         </div>
-        <div style="position: relative;">    
+        <div style="position: relative;">
             <a href="https://supernets.org/" target="_blank" style="position: absolute; bottom: 10px; right:10px; display: flex; align-items: center; text-decoration: none;">
-            <p style="font-weight:200; color:#ffffff">A  SUPERNETS</p>
-            <img src="https://git.supernets.org/assets/img/logo.png" width="30px" style="margin: 0 5px;">
-            <p style="font-weight:200; color: #ffffff">SERVICE</p>
+                <p style="font-weight:200; color:#ffffff">A  SUPERNETS</p>
+                <img src="https://git.supernets.org/assets/img/logo.png" width="30px" style="margin: 0 5px;">
+                <p style="font-weight:200; color: #ffffff">SERVICE</p>
             </a>
         </div>
     </body>
 </html>
-
 <script>
-$('#chooseFile').bind('change', function () {
-  var filename = $("#chooseFile").val();
-  if (/^\s*$/.test(filename)) {
-    $(".file-upload").removeClass('active');
-    $("#noFile").text("No file chosen...");
-  }
-  else {
-    $(".file-upload").addClass('active');
-    $("#noFile").text(filename.replace("C:\\fakepath\\", "")); 
-  }
-});
+    $('#chooseFile').bind('change', function () {
+      var filename = $("#chooseFile").val();
+      if (/^\s*$/.test(filename)) {
+        $(".file-upload").removeClass('active');
+        $("#noFile").text("No file chosen...");
+      }
+      else {
+        $(".file-upload").addClass('active');
+        $("#noFile").text(filename.replace("C:\\fakepath\\", "")); 
+      }
+    });
 </script>
-

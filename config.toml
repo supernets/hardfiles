@@ -5,4 +5,4 @@ dbfile = "dbfile.db"
 filelen = 6
 folder = "files"
 default_ttl = 86400
-maximum_ttl = 432000
+maximum_ttl = 604800

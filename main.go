@@ -111,7 +111,6 @@ func Exists(path string) bool {
 
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	// expiry time
-	var name string
 	var ttl int64
 
 	ttl = 0
@@ -150,6 +149,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// generate + check name
+	var name string
 	for {
 		id := NameGen()
 		name = id + mtype.Extension()
@@ -225,24 +225,22 @@ func main() {
 			log.Fatal().Err(err).Msg("unable to create database file")
 		}
 	}
-	err := landlock.V2.BestEffort().RestrictPaths(
+
+	if err := landlock.V2.BestEffort().RestrictPaths(
 		landlock.RWDirs(conf.FileFolder),
 		landlock.RWDirs(conf.Webroot),
 		landlock.RWFiles(conf.DBFile),
-	)
-
-	if err != nil {
+	); err != nil {
 		log.Warn().Err(err).Msg("could not landlock")
 	}
 
-	_, err = os.Open("/etc/passwd")
-	if err == nil {
+	if _, err := os.Open("/etc/passwd"); err != nil {
 		log.Warn().Msg("landlock failed, could open /etc/passwd, are you on a 5.13+ kernel?")
 	} else {
 		log.Info().Err(err).Msg("landlocked")
 	}
 
-	db, err = bolt.Open(conf.DBFile, 0600, nil)
+	db, err := bolt.Open(conf.DBFile, 0600, nil)
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to open database file")
 	}

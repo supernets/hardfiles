@@ -234,7 +234,7 @@ func main() {
 		log.Warn().Err(err).Msg("could not landlock")
 	}
 
-	if _, err = os.Open("/etc/passwd"); err == nil {
+	if _, err = os.Open("/etc/passwd"); err != nil {
 		log.Warn().Msg("landlock failed, could open /etc/passwd, are you on a 5.13+ kernel?")
 	} else {
 		log.Info().Err(err).Msg("landlocked")

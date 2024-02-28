@@ -7,6 +7,9 @@ import (
 	"os"
 	"strconv"
 	"time"
+  "compress/gzip"
+  "strings"
+  "bytes"
 
 	"github.com/BurntSushi/toml"
 	"github.com/gabriel-vasile/mimetype"
@@ -109,31 +112,76 @@ func Exists(path string) bool {
 	return true
 }
 
+func isValidGzipHeader(data []byte) bool {
+    return len(data) >= 2 && data[0] == 0x1f && data[1] == 0x8b
+}
+
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	// expiry time
 	var ttl int64
 
 	ttl = 0
 
-	file, _, err := r.FormFile("file")
+	var file, header, err = r.FormFile("file")
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	defer file.Close()
+  defer file.Close()
 
-	mtype, err := mimetype.DetectReader(file)
-	if err != nil {
-		w.Write([]byte("error detecting the mime type of your file\n"))
-		return
-	}
-	file.Seek(0, 0)
+  var buffer bytes.Buffer
+  _, err = io.Copy(&buffer, file)
+  if err != nil {
+    log.Error().Err(err).Msg("error reading file data")
+    w.WriteHeader(http.StatusInternalServerError)
+    return
+  }
+
+  var data bytes.Buffer
+  var name = header.Filename
+  println("file: " + name)
+  if strings.HasSuffix(name, ".5000") {
+    buffer.WriteTo(&data)
+    if isValidGzipHeader(data.Bytes()[:2]) {
+      gz, err := gzip.NewReader(&data)
+        if err != nil {
+          log.Error().Err(err).Msg("error creating gzip reader")
+          w.WriteHeader(http.StatusInternalServerError)
+          return
+        }
+        defer gz.Close()
+
+        _, err = io.Copy(&buffer, gz)
+        if err != nil {
+          log.Error().Err(err).Msg("error decompressing gzip file")
+          w.WriteHeader(http.StatusInternalServerError)
+          return
+        }
+
+        name = strings.TrimSuffix(name, ".5000")
+        data.Write(buffer.Bytes())
+    } else {
+      log.Error().Msg("Invalid gzip file")
+      w.WriteHeader(http.StatusBadRequest)
+      return
+      }
+  } else {
+    data.Write(buffer.Bytes())
+  }
+
+  mtype, err := mimetype.DetectReader(&data)
+  if err != nil {
+    log.Error().Err(err).Msg("error detecting MIME type")
+    w.WriteHeader(http.StatusInternalServerError)
+    return
+  }
 
 	// Check if expiry time is present and length is too long
 	if r.PostFormValue("expiry") != "" {
 		ttl, err = strconv.ParseInt(r.PostFormValue("expiry"), 10, 64)
 		if err != nil {
 			log.Error().Err(err).Msg("expiry could not be parsed")
+      w.WriteHeader(http.StatusBadRequest)
 		} else {
 			// Get maximum ttl length from config and kill upload if specified ttl is too long, this can probably be handled better in the future
 			if ttl < 1 || ttl > int64(conf.MaxTTL) {
@@ -143,13 +191,12 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Default to conf if not present
+  // Default to conf if not present
 	if ttl == 0 {
 		ttl = int64(conf.DefaultTTL)
 	}
 
 	// generate + check name
-	var name string
 	for {
 		id := NameGen()
 		name = id + mtype.Extension()
@@ -167,18 +214,25 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		log.Error().Err(err).Msg("failed to put expiry")
 	}
 
-	f, err := os.OpenFile(conf.FileFolder+"/"+name, os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
+	f, err := os.OpenFile(conf.FileFolder+"/"+name, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
+  if err != nil {
 		log.Error().Err(err).Msg("error opening a file for write")
 		w.WriteHeader(http.StatusInternalServerError) // change to json
 		return
 	}
 	defer f.Close()
 
-	io.Copy(f, file)
+  io.Copy(f, &buffer)
+  if err != nil {
+    log.Error().Err(err).Msg("error copying file")
+    w.WriteHeader(http.StatusInternalServerError)
+    return
+  }
+  buffer.Reset()
+  data.Reset()
 	log.Info().Str("name", name).Int64("ttl", ttl).Msg("wrote new file")
 
-	hostedurl := "https://" + conf.VHost + "/uploads/" + name
+	hostedurl := "http://" + conf.VHost + "/uploads/" + name
 
 	w.Header().Set("Location", hostedurl)
 	w.WriteHeader(http.StatusSeeOther)

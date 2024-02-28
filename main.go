@@ -232,7 +232,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
   data.Reset()
 	log.Info().Str("name", name).Int64("ttl", ttl).Msg("wrote new file")
 
-	hostedurl := "http://" + conf.VHost + "/uploads/" + name
+	hostedurl := "https://" + conf.VHost + "/uploads/" + name
 
 	w.Header().Set("Location", hostedurl)
 	w.WriteHeader(http.StatusSeeOther)

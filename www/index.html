@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html style="overflow: hidden;">
     <head>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pako/1.0.4/pako_deflate.min.js"></script>
         <script type="text/javascript" src="//code.jquery.com/jquery-1.10.2.min.js"></script>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="icon" href="fist.ico">
@@ -241,16 +242,35 @@
         </div>
     </body>
 </html>
+
 <script>
-    $('#chooseFile').bind('change', function () {
-      var filename = $("#chooseFile").val();
-      if (/^\s*$/.test(filename)) {
-        $(".file-upload").removeClass('active');
-        $("#noFile").text("No file chosen...");
-      }
-      else {
-        $(".file-upload").addClass('active');
-        $("#noFile").text(filename.replace("C:\\fakepath\\", "")); 
-      }
+    $(document).ready(function () {
+        $('#chooseFile').bind('change', function (e) {
+            var file = e.target.files[0];
+            if (!file) {
+                $(".file-upload").removeClass('active');
+                $("#noFile").text("No file chosen...");
+                return;
+            }
+
+            $(".file-upload").addClass('active');
+            $("#noFile").text(file.name.replace("C:\\fakepath\\", ""));
+
+            var reader = new FileReader();
+            reader.onload = function(event) {
+                var binaryData = event.target.result;
+                // Compress the file data
+          var compressed = pako.gzip(new Uint8Array(binaryData), { level:1});
+                var compressedFile = new Blob([compressed], { type: "application/gzip" });
+                updateFileInput(compressedFile, file.name);
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        function updateFileInput(compressedFile, fileName) {
+            var dataTransfer = new DataTransfer();
+            dataTransfer.items.add(new File([compressedFile], fileName + '.5000'));
+            $('#chooseFile')[0].files = dataTransfer.files;
+        }
     });
 </script>

@@ -3,26 +3,107 @@
     <head>
         <script type="text/javascript" src="//code.jquery.com/jquery-1.10.2.min.js"></script>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="The Hardest file hosting solution, creating by the Hardest people online."/>
         <link rel="icon" href="fist.ico">
         <title>HARDFILES</title>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
         <style>
-             body {
-                 font-family: sans-serif;
-                 background-image: url('https://media.tenor.com/fYnd0R6F-0UAAAAC/gun-revolver.gif');
-                 background-size: cover;
-                 background-position: center;
+            @keyframes rainbowbtn {
+                0%{background-color: lime;}
+                10%{background-color: red;}
+                20%{background-color: purple;}
+                30%{background-color: hotpink;}
+                40%{background-color: orange;}
+                50%{background-color: yellow;}
+                60%{background-color: turquoise;}
+                70%{background-color: aqua;}
+                80%{background-color: cyan;}
+                90%{background-color: blue;}
+                100%{background-color: lime;}
             }
-             @media (prefers-color-scheme: dark) {
+
+            @keyframes rainbowbox {
+                0%{color: lime; border: 1px dashed lime;}
+                10%{color: red; border: 1px dashed red;}
+                20%{color: purple; border: 1px dashed purple;}
+                30%{color: hotpink; border: 1px dashed hotpink;}
+                40%{color: orange; border: 1px dashed orange;}
+                50%{color: yellow; border: 1px dashed yellow;}
+                60%{color: turquoise; border: 1px dashed turquoise;}
+                70%{color: aqua; border: 1px dashed aqua;}
+                80%{color: cyan; border: 1px dashed cyan;}
+                90%{color: blue; border: 1px dashed blue;}
+                100%{color: lime; border: 1px dashed lime;}
+            }
+
+            @media (prefers-color-scheme: dark) {
                  body {
                      overflow: hidden;
                      background: black;
-                     background-image: url('https://media.tenor.com/fYnd0R6F-0UAAAAC/gun-revolver.gif');
+                     background-image: url('revolver.gif');
                      background-size: cover;
                      background-position: center;
                      color: white;
                 }
             }
-             .container {
+
+            @media (min-width: 768px) {
+                body {
+                    background-image: url('delirious.gif') !important;
+
+                }
+                 .container {
+                     width: 750px;
+                }
+
+                .hf {
+                    font-size: 3rem;
+                }
+
+                .hflogo {
+                   width: 50% !important;
+                }
+
+                #fupload {
+                    width: 20rem;
+                }
+
+                .subform {
+                    margin-top: 0 !important;
+                }
+            }
+            
+            @media (min-width: 992px) {
+                 .container {
+                     width: 970px;
+                }
+            }
+            
+            @media (min-width: 1200px) {
+                 .container {
+                     width: 1170px;
+                }
+                 .hf {
+                     font-size: 5rem;
+                }
+
+                #curl {
+                    display: block !important;
+                }
+            }
+
+            body {
+                 font-family: sans-serif;
+                 background-image: url('pentagram.gif');
+                 background-size: cover;
+                 background-position: center;
+            }
+            
+            .container {
                  padding-right: 15px;
                  padding-left: 15px;
                  margin-right: auto;
@@ -33,142 +114,14 @@
                  justify-content: center;
                  height: 100vh;
             }
-             @media (min-width: 768px) {
-                 .container {
-                     width: 750px;
-                }
-                 .hf {
-                     font-size: 3rem;
-                }
-
-                 .hflogo {
-                    width: 50% !important;
-                 }
-            }
-             @media (min-width: 992px) {
-                 .container {
-                     width: 970px;
-                }
-            }
-             @media (min-width: 1200px) {
-                 .container {
-                     width: 1170px;
-                }
-                 .hf {
-                     font-size: 5rem;
-                }
-            }
-             input,select {
-                 margin-bottom: 1em;
-            }
-             .file-upload{
-                display:block;
-                text-align:center;
-                font-family: Helvetica, Arial, sans-serif;
-                font-size: 12px;
-                 width: 300px;
-            }
-             .file-upload .file-select{
-                display:block;
-                border: 2px solid #dce4ec;
-                color: black;
-                cursor:pointer;
-                height:40px;
-                line-height:40px;
-                text-align:left;
-                background:#FFFFFF;
-                overflow:hidden;
-                position:relative;
-            }
-             .file-upload .file-select .file-select-button{
-                background:#dce4ec;
-                padding:0 10px;
-                display:inline-block;
-                height:40px;
-                line-height:40px;
-            }
-             .file-upload .file-select .file-select-name{
-                line-height:40px;
-                display:inline-block;
-                padding:0 10px;
-            }
-             .file-upload .file-select:hover{
-                border-color:red;
-                transition:all .2s ease-in-out;
-                -moz-transition:all .2s ease-in-out;
-                -webkit-transition:all .2s ease-in-out;
-                -o-transition:all .2s ease-in-out;
-            }
-             .file-upload .file-select:hover .file-select-button{
-                background:red;
-                color:#FFFFFF;
-                transition:all .2s ease-in-out;
-                -moz-transition:all .2s ease-in-out;
-                -webkit-transition:all .2s ease-in-out;
-                -o-transition:all .2s ease-in-out;
-            }
-             .file-upload.active .file-select{
-                border-color:red;
-                transition:all .2s ease-in-out;
-                -moz-transition:all .2s ease-in-out;
-                -webkit-transition:all .2s ease-in-out;
-                -o-transition:all .2s ease-in-out;
-            }
-             .file-upload.active .file-select .file-select-button{
-                background:red;
-                color:#FFFFFF;
-                transition:all .2s ease-in-out;
-                -moz-transition:all .2s ease-in-out;
-                -webkit-transition:all .2s ease-in-out;
-                -o-transition:all .2s ease-in-out;
-            }
-             .file-upload .file-select input[type=file]{
-                z-index:100;
-                cursor:pointer;
-                position:absolute;
-                height:100%;
-                width:100%;
-                top:0;
-                left:0;
-                opacity:0;
-                filter:alpha(opacity=0);
-            }
-             .file-upload .file-select.file-select-disabled{
-                opacity:0.65;
-            }
-             .file-upload .file-select.file-select-disabled:hover{
-                cursor:default;
-                display:block;
-                border: 2px solid #dce4ec;
-                color: red;
-                cursor:pointer;
-                height:40px;
-                line-height:40px;
-                margin-top:5px;
-                text-align:left;
-                background:#FFFFFF;
-                overflow:hidden;
-                position:relative;
-            }
-             .file-upload .file-select.file-select-disabled:hover .file-select-button{
-                background:#dce4ec;
-                color:#666666;
-                padding:0 10px;
-                display:inline-block;
-                height:40px;
-                line-height:40px;
-            }
-             .file-upload .file-select.file-select-disabled:hover .file-select-name{
-                line-height:40px;
-                display:inline-block;
-                padding:0 10px;
-            }
-             .subform {
+            
+            .subform {
                  display: flex;
                  flex-direction: column;
                  align-items: center;
             }
-             button {
+            
+            button {
                  display: inline-block;
                  border: 0;
                  outline: 0;
@@ -193,64 +146,49 @@
                  -webkit-text-size-adjust:none;
                  box-shadow: 0 1px 2px rgba(0,0,0,.15);
             }
-             button:hover {
-                 background: #c93c1d;
-                 -webkit-transition:all .25s ease-in-out;
-                 -moz-transition:all .25s ease-in-out;
-                 -o-transition:all .25s ease-in-out;
-                 transition:all .25s ease-in-out;
+
+            button:hover {
+                 animation: rainbowbtn 0.2s infinite;
+                 color:black !important;
             }
-             button:active {
-                 background: #ae3318;
-            }
-             button.light {
+
+            button.light {
                  background: #fff;
                  color: #555759;
             }
-             button.light:hover {
-                 background: red;
-                 color: #fff;
-            }
-             .hflogo {
+
+            .hflogo {
                 width: 90%;
+            }
+
+            input {
+                animation: rainbowbox 6s infinite;
+                cursor: pointer;
+            }
+
+            .litfont {
+                font-family: "Source Code Pro", monospace;
+                font-optical-sizing: auto;
+                font-style: normal;
             }
         </style>
     </head>
     <body>
         <div class="container">
-            <img src="header.png" class="hflogo" alt="supernets" style="margin-top: 10rem;">
-            <h2 style="font-size: 1rem; color: #ffffff; font-weight: 200;">curl -F file=@example.png https://hardfiles.org/</h1>
-            <form method="POST" class="subform" enctype="multipart/form-data">
-                <div class="file-upload" style="display: flex; justify-content: center; width: 25rem;">
-                    <div class="file-select" style="width: 100%;">
-                        <div class="file-select-button" id="fileName">Browse</div>
-                        <div class="file-select-name" id="noFile" style="cursor: pointer;">No file chosen...</div>
-                        <input type="file" name="file" id="chooseFile">
-                    </div>
+            <img src="header.png" class="hflogo" alt="hardfiles" style="margin-top: 3rem;">
+            <h2 id="curl" class="litfont" style="display: none; font-size: 1rem; color: #ffffff; text-align: center; font-weight: lighter;">curl -F file=@example.png https://hardfiles.org/</h1>
+            <form method="POST" class="subform" enctype="multipart/form-data" style="margin-top: 0.5rem;">
+                <div style="display: flex; align-items: center; justify-content: center;">
+                    <input type="file" id="fupload" name="file" style="background-color: black; padding: 12px; border-radius: 5px; color: white;" />
                     <button class="light" type="submit" style="margin-left: 0.7rem;">up</button>
                 </div>
             </form>
-            <p style="color: white; font-weight: 300;">⚠️ Uploads are erased after 24 hours</p>
+            <p style="color: white; font-weight: bold; font-size:0.8rem;" class="litfont">⚠️ Uploads are destroyed after 24 hours</p>
         </div>
-        <div style="position: relative;">
-            <a href="https://supernets.org/" target="_blank" style="position: absolute; bottom: 10px; right:10px; display: flex; align-items: center; text-decoration: none;">
-                <p style="font-weight:200; color:#ffffff">A  SUPERNETS</p>
-                <img src="https://git.supernets.org/assets/img/logo.png" width="30px" style="margin: 0 5px;">
-                <p style="font-weight:200; color: #ffffff">SERVICE</p>
+        <div id="callingcard" style="position: relative;">
+            <a href="https://supernets.org/" target="_blank" style="position: absolute; bottom: 20px; right:1px; display: flex; align-items: center; text-decoration: none;">
+                <img src="supernets_logo.png" width="40px;">
             </a>
         </div>
     </body>
 </html>
-<script>
-    $('#chooseFile').bind('change', function () {
-      var filename = $("#chooseFile").val();
-      if (/^\s*$/.test(filename)) {
-        $(".file-upload").removeClass('active');
-        $("#noFile").text("No file chosen...");
-      }
-      else {
-        $(".file-upload").addClass('active');
-        $("#noFile").text(filename.replace("C:\\fakepath\\", "")); 
-      }
-    });
-</script>

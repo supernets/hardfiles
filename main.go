@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/BurntSushi/toml"
@@ -110,13 +111,11 @@ func Exists(path string) bool {
 }
 
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
-	// expiry time
-	var ttl int64
-
-	ttl = 0
+	var ttl int64 = 0 //expiration
 
 	file, _, err := r.FormFile("file")
 	if err != nil {
+		log.Error().Err(err).Msg("empty file form field")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -180,9 +179,11 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	hostedurl := "https://" + conf.VHost + "/uploads/" + name
 
-	w.Header().Set("Location", hostedurl)
+	if strings.Contains(name, "jpeg") || strings.Contains(name, "png") || strings.Contains(name, "jpg") || strings.Contains(name, "txt") || strings.Contains(name, "csv") || strings.Contains(name, "pdf") {
+		w.Header().Set("Location", hostedurl)
+	}
 	w.WriteHeader(http.StatusSeeOther)
-	w.Write([]byte(hostedurl))
+	w.Write([]byte(hostedurl + "\n"))
 }
 
 func Cull() {
@@ -229,6 +230,7 @@ func main() {
 	if err = landlock.V2.BestEffort().RestrictPaths(
 		landlock.RWDirs(conf.FileFolder),
 		landlock.RWDirs(conf.Webroot),
+		// landlock.RWDirs("/tmp"),
 		landlock.RWFiles(conf.DBFile),
 	); err != nil {
 		log.Warn().Err(err).Msg("could not landlock")
@@ -279,10 +281,12 @@ func main() {
 	go Cull()
 
 	serv := &http.Server{
-		Addr:        ":" + conf.LPort,
-		Handler:     r,
-		ErrorLog:    nil,
-		IdleTimeout: 20 * time.Second,
+		Addr:         ":" + conf.LPort,
+		Handler:      r,
+		ErrorLog:     nil,
+		IdleTimeout:  60 * time.Second,
+		ReadTimeout:  600 * time.Second,
+		WriteTimeout: 600 * time.Second,
 	}
 
 	log.Warn().Msg("shredding is only effective on HDD volumes")

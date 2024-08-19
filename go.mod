@@ -12,6 +12,8 @@ require (
 )
 
 require (
+	github.com/alecthomas/chroma/v2 v2.13.0 // indirect
+	github.com/dlclark/regexp2 v1.11.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	golang.org/x/net v0.17.0 // indirect

@@ -1,8 +1,9 @@
 webroot = "www"
 lport = "5000"
 vhost = "hardfiles.org"
-dbfile = "dbfile.db"
 filelen = 6
 folder = "files"
-default_ttl = 86400
-maximum_ttl = 604800
+bgfolder = "backgrounds"
+max_upload_mb = 5120
+ttl_hours = 24
+rate_limit_per_min = 30

@@ -1,12 +1,16 @@
-FROM golang:1.21-alpine as builder
+FROM golang:1.22-alpine AS builder
 WORKDIR /build
 COPY go.mod go.sum ./
 RUN go mod download
-COPY *.go ./
-RUN go build -o hardfiles main.go
+COPY main.go .
+RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o hardfiles main.go
 
-FROM golang:1.21-alpine as app
+FROM alpine:3.19
+RUN apk add --no-cache ca-certificates
 WORKDIR /app
 COPY --from=builder /build/hardfiles .
-RUN mkdir files
+COPY www/ ./www/
+COPY config.toml .
+RUN mkdir -p files backgrounds
+EXPOSE 5000
 CMD ["./hardfiles"]

@@ -1,7 +1,3 @@
-.git/
 files/
-Dockerfile
-docker-compose.yml
-.gitignore
-README.md
-config.toml
+.git/
+*.db

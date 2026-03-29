@@ -1,276 +1,502 @@
 <!DOCTYPE html>
-<html style="overflow: hidden;">
-    <head>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pako/1.0.4/pako_deflate.min.js"></script>
-        <script type="text/javascript" src="//code.jquery.com/jquery-1.10.2.min.js"></script>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" href="fist.ico">
-        <title>HARDFILES</title>
-        <style>
-             body {
-                 font-family: sans-serif;
-                 background-image: url('https://media.tenor.com/fYnd0R6F-0UAAAAC/gun-revolver.gif');
-                 background-size: cover;
-                 background-position: center;
-            }
-             @media (prefers-color-scheme: dark) {
-                 body {
-                     overflow: hidden;
-                     background: black;
-                     background-image: url('https://media.tenor.com/fYnd0R6F-0UAAAAC/gun-revolver.gif');
-                     background-size: cover;
-                     background-position: center;
-                     color: white;
-                }
-            }
-             .container {
-                 padding-right: 15px;
-                 padding-left: 15px;
-                 margin-right: auto;
-                 margin-left: auto;
-                 display: flex;
-                 flex-direction: column;
-                 align-items: center;
-                 justify-content: center;
-                 height: 100vh;
-            }
-             @media (min-width: 768px) {
-                 .container {
-                     width: 750px;
-                }
-                 .hf {
-                     font-size: 3rem;
-                }
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HARDFILES</title>
+<link rel="icon" href="/static/fist.ico">
+<style>
+@font-face {
+  font-family: 'VT323';
+  src: url('/static/vt323.woff2') format('woff2');
+  font-weight: 400;
+}
+:root {
+  --bg: #000000;
+  --overlay: rgba(0,0,0,0.45);
+  --red: #FF0000;
+  --cyan: #00FFFF;
+  --green: #00FF00;
+  --yellow: #FFFF00;
+  --text: #FFFFFF;
+  --text-dim: #888888;
+  --font: 'VT323', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 20px;
+}
+#bg {
+  position: fixed;
+  inset: 0;
+  background-image: url('{{.BgURL}}');
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: 0;
+}
+#bg.loaded { opacity: 1; }
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--overlay);
+  pointer-events: none;
+  z-index: 1;
+}
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0,0,0,0.12) 2px,
+    rgba(0,0,0,0.12) 3px
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+.wrap {
+  position: relative;
+  z-index: 3;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  gap: 0.5rem;
+}
 
-                 .hflogo {
-                    width: 50% !important;
-                 }
-            }
-             @media (min-width: 992px) {
-                 .container {
-                     width: 970px;
-                }
-            }
-             @media (min-width: 1200px) {
-                 .container {
-                     width: 1170px;
-                }
-                 .hf {
-                     font-size: 5rem;
-                }
-            }
-             input,select {
-                 margin-bottom: 1em;
-            }
-             .file-upload{
-                display:block;
-                text-align:center;
-                font-family: Helvetica, Arial, sans-serif;
-                font-size: 12px;
-                 width: 300px;
-            }
-             .file-upload .file-select{
-                display:block;
-                border: 2px solid #dce4ec;
-                color: black;
-                cursor:pointer;
-                height:40px;
-                line-height:40px;
-                text-align:left;
-                background:#FFFFFF;
-                overflow:hidden;
-                position:relative;
-            }
-             .file-upload .file-select .file-select-button{
-                background:#dce4ec;
-                padding:0 10px;
-                display:inline-block;
-                height:40px;
-                line-height:40px;
-            }
-             .file-upload .file-select .file-select-name{
-                line-height:40px;
-                display:inline-block;
-                padding:0 10px;
-            }
-             .file-upload .file-select:hover{
-                border-color:red;
-                transition:all .2s ease-in-out;
-                -moz-transition:all .2s ease-in-out;
-                -webkit-transition:all .2s ease-in-out;
-                -o-transition:all .2s ease-in-out;
-            }
-             .file-upload .file-select:hover .file-select-button{
-                background:red;
-                color:#FFFFFF;
-                transition:all .2s ease-in-out;
-                -moz-transition:all .2s ease-in-out;
-                -webkit-transition:all .2s ease-in-out;
-                -o-transition:all .2s ease-in-out;
-            }
-             .file-upload.active .file-select{
-                border-color:red;
-                transition:all .2s ease-in-out;
-                -moz-transition:all .2s ease-in-out;
-                -webkit-transition:all .2s ease-in-out;
-                -o-transition:all .2s ease-in-out;
-            }
-             .file-upload.active .file-select .file-select-button{
-                background:red;
-                color:#FFFFFF;
-                transition:all .2s ease-in-out;
-                -moz-transition:all .2s ease-in-out;
-                -webkit-transition:all .2s ease-in-out;
-                -o-transition:all .2s ease-in-out;
-            }
-             .file-upload .file-select input[type=file]{
-                z-index:100;
-                cursor:pointer;
-                position:absolute;
-                height:100%;
-                width:100%;
-                top:0;
-                left:0;
-                opacity:0;
-                filter:alpha(opacity=0);
-            }
-             .file-upload .file-select.file-select-disabled{
-                opacity:0.65;
-            }
-             .file-upload .file-select.file-select-disabled:hover{
-                cursor:default;
-                display:block;
-                border: 2px solid #dce4ec;
-                color: red;
-                cursor:pointer;
-                height:40px;
-                line-height:40px;
-                margin-top:5px;
-                text-align:left;
-                background:#FFFFFF;
-                overflow:hidden;
-                position:relative;
-            }
-             .file-upload .file-select.file-select-disabled:hover .file-select-button{
-                background:#dce4ec;
-                color:#666666;
-                padding:0 10px;
-                display:inline-block;
-                height:40px;
-                line-height:40px;
-            }
-             .file-upload .file-select.file-select-disabled:hover .file-select-name{
-                line-height:40px;
-                display:inline-block;
-                padding:0 10px;
-            }
-             .subform {
-                 display: flex;
-                 flex-direction: column;
-                 align-items: center;
-            }
-             button {
-                 display: inline-block;
-                 border: 0;
-                 outline: 0;
-                 margin: 0;
-                 padding: 15px;
-                 height: 44px;
-                 color: #fff;
-                 font: 19px/15px 'Oswald', 'HelveticaNeue', 'Helvetica Neue', Helvetica, Arial, "Lucida Grande", sans-serif;
-                 font-weight: bold;
-                 text-transform: uppercase;
-                 cursor: pointer;
-                 -webkit-border-radius: 3px;
-                 -moz-border-radius: 3px;
-                 border-radius: 3px;
-                 -webkit-box-sizing: border-box;
-                /* Safari/Chrome, other WebKit */
-                 -moz-box-sizing: border-box;
-                /* Firefox, other Gecko */
-                 box-sizing: border-box;
-                /* Opera/IE 8+ */
-                 -webkit-font-smoothing:antialiased;
-                 -webkit-text-size-adjust:none;
-                 box-shadow: 0 1px 2px rgba(0,0,0,.15);
-            }
-             button:hover {
-                 background: #c93c1d;
-                 -webkit-transition:all .25s ease-in-out;
-                 -moz-transition:all .25s ease-in-out;
-                 -o-transition:all .25s ease-in-out;
-                 transition:all .25s ease-in-out;
-            }
-             button:active {
-                 background: #ae3318;
-            }
-             button.light {
-                 background: #fff;
-                 color: #555759;
-            }
-             button.light:hover {
-                 background: red;
-                 color: #fff;
-            }
-             .hflogo {
-                width: 90%;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <img src="header.png" class="hflogo" alt="supernets" style="margin-top: 10rem;">
-            <h2 style="font-size: 1rem; color: #ffffff; font-weight: 200;">curl -F file=@example.png https://hardfiles.org/</h1>
-            <form method="POST" class="subform" enctype="multipart/form-data">
-                <div class="file-upload" style="display: flex; justify-content: center; width: 25rem;">
-                    <div class="file-select" style="width: 100%;">
-                        <div class="file-select-button" id="fileName">Browse</div>
-                        <div class="file-select-name" id="noFile" style="cursor: pointer;">No file chosen...</div>
-                        <input type="file" name="file" id="chooseFile">
-                    </div>
-                    <button class="light" type="submit" style="margin-left: 0.7rem;">up</button>
-                </div>
-            </form>
-            <p style="color: white; font-weight: 300;">⚠️ Uploads are erased after 24 hours</p>
-        </div>
-        <div style="position: relative;">
-            <a href="https://supernets.org/" target="_blank" style="position: absolute; bottom: 10px; right:10px; display: flex; align-items: center; text-decoration: none;">
-                <p style="font-weight:200; color:#ffffff">A  SUPERNETS</p>
-                <img src="https://git.supernets.org/assets/img/logo.png" width="30px" style="margin: 0 5px;">
-                <p style="font-weight:200; color: #ffffff">SERVICE</p>
-            </a>
-        </div>
-    </body>
-</html>
+/* ---- Logo glitch ---- */
+.logo-wrap {
+  position: relative;
+  width: 50%;
+  max-width: 600px;
+  margin-bottom: 0.5rem;
+}
+@media (max-width: 768px) { .logo-wrap { width: 90%; } }
+.logo-wrap img {
+  width: 100%;
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+.logo-wrap::before,
+.logo-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('/static/header.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
+.logo-wrap::before {
+  animation: glitch-before 3s infinite steps(1);
+}
+.logo-wrap::after {
+  animation: glitch-after 3s infinite steps(1);
+  animation-delay: 0.15s;
+}
+@keyframes glitch-before {
+  0%,4%   { opacity: 0; }
+  5%      { opacity: 0.8; transform: translate(-5px, 2px); filter: hue-rotate(90deg);
+            clip-path: polygon(0 15%, 100% 15%, 100% 35%, 0 35%); }
+  7%      { opacity: 0.8; transform: translate(5px, -2px); filter: hue-rotate(180deg);
+            clip-path: polygon(0 55%, 100% 55%, 100% 75%, 0 75%); }
+  8%,29%  { opacity: 0; }
+  30%     { opacity: 0.7; transform: translate(-3px, -1px); filter: hue-rotate(270deg);
+            clip-path: polygon(0 40%, 100% 40%, 100% 60%, 0 60%); }
+  32%,59% { opacity: 0; }
+  60%     { opacity: 0.9; transform: translate(6px, 1px); filter: hue-rotate(120deg);
+            clip-path: polygon(0 10%, 100% 10%, 100% 25%, 0 25%); }
+  61%     { opacity: 0.9; transform: translate(-4px, 3px); filter: hue-rotate(200deg);
+            clip-path: polygon(0 70%, 100% 70%, 100% 90%, 0 90%); }
+  63%,84% { opacity: 0; }
+  85%     { opacity: 0.7; transform: translate(3px, -2px); filter: hue-rotate(45deg);
+            clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%); }
+  87%,100%{ opacity: 0; }
+}
+@keyframes glitch-after {
+  0%,14%  { opacity: 0; }
+  15%     { opacity: 0.7; transform: translate(4px, 2px); filter: hue-rotate(300deg);
+            clip-path: polygon(0 20%, 100% 20%, 100% 45%, 0 45%); }
+  17%,44% { opacity: 0; }
+  45%     { opacity: 0.8; transform: translate(-6px, -1px); filter: hue-rotate(60deg);
+            clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%); }
+  47%     { opacity: 0.6; transform: translate(3px, 3px); filter: hue-rotate(150deg);
+            clip-path: polygon(0 5%, 100% 5%, 100% 20%, 0 20%); }
+  49%,74% { opacity: 0; }
+  75%     { opacity: 0.9; transform: translate(-5px, 2px); filter: hue-rotate(240deg);
+            clip-path: polygon(0 45%, 100% 45%, 100% 65%, 0 65%); }
+  77%,100%{ opacity: 0; }
+}
+
+/* ---- Tagline ---- */
+.tagline {
+  color: var(--red);
+  font-size: 1.4rem;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+/* ---- Drop zone ---- */
+.drop-zone {
+  position: relative;
+  width: 440px;
+  max-width: 90vw;
+  min-height: 150px;
+  border: 2px dashed var(--red);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font);
+  text-align: center;
+  animation: pulse-opacity 2s ease-in-out infinite;
+  transition: background 0.2s, border-style 0.1s;
+}
+@media (max-width: 768px) {
+  .drop-zone { width: 90vw; min-height: 180px; }
+}
+@keyframes pulse-opacity {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  animation: shake 0.3s ease;
+  opacity: 1;
+  border-style: solid;
+  background: rgba(255,0,0,0.07);
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+.drop-zone.uploading {
+  animation: pulse-opacity 0.5s ease-in-out infinite;
+  border-style: dashed;
+  border-color: var(--red);
+}
+.drop-zone.success {
+  animation: none;
+  opacity: 1;
+  border-style: solid;
+  border-color: var(--green);
+}
+.drop-zone.error-state {
+  animation: none;
+  opacity: 1;
+  border-style: solid;
+  border-color: var(--red);
+}
+.drop-main {
+  font-size: 2rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+.drop-sub {
+  font-size: 1.1rem;
+  color: var(--text-dim);
+}
+.drop-url {
+  font-size: 1.6rem;
+  color: var(--red);
+  word-break: break-all;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+}
+.drop-url:hover { text-decoration: underline; }
+.drop-another {
+  font-size: 1rem;
+  color: var(--text-dim);
+  cursor: pointer;
+  margin-top: 0.5rem;
+  text-decoration: underline;
+  background: none;
+  border: none;
+  font-family: var(--font);
+  min-height: 44px;
+}
+.drop-another:hover { color: var(--text); }
+#file-input { display: none; }
+
+/* ---- Password controls ---- */
+#pw-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.3rem;
+  font-size: 1.2rem;
+  color: var(--text-dim);
+  min-height: 44px;
+}
+#pw-row input[type=checkbox] { width: 18px; height: 18px; cursor: pointer; }
+#pw-input-wrap { margin-top: 0.5rem; }
+#pw-input {
+  background: #000;
+  border: 2px dashed var(--red);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 1.3rem;
+  padding: 0.5rem 0.8rem;
+  width: 440px;
+  max-width: 90vw;
+  outline: none;
+  min-height: 44px;
+}
+#pw-input:focus { border-style: solid; }
+
+/* ---- Curl example ---- */
+.curl-box {
+  margin-top: 0.5rem;
+  width: 440px;
+  max-width: 90vw;
+  border-left: 3px solid var(--green);
+  padding: 0.75rem 1rem;
+  background: rgba(0,255,0,0.04);
+}
+.curl-box code {
+  color: var(--green);
+  font-family: var(--font);
+  font-size: 1.1rem;
+  text-shadow: 0 0 8px rgba(0,255,0,0.5);
+  white-space: pre-wrap;
+  word-break: break-all;
+  display: block;
+}
+
+/* ---- Warning ---- */
+.warning {
+  margin-top: 0.5rem;
+  color: var(--yellow);
+  font-size: 1.3rem;
+  letter-spacing: 0.08em;
+  text-align: center;
+  animation: flicker 4s infinite;
+}
+@keyframes flicker {
+  0%,95%,100% { opacity: 1; }
+  96% { opacity: 0.3; }
+  97% { opacity: 1; }
+  98% { opacity: 0.5; }
+  99% { opacity: 1; }
+}
+
+/* ---- Live region ---- */
+#live-region { position: absolute; left: -9999px; top: 0; }
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<div class="wrap">
+  <div class="logo-wrap">
+    <img src="/static/header.png" alt="HARDFILES">
+  </div>
+  <div class="tagline">ephemeral &bull; volatile &bull; gone in 24h</div>
+
+  <button class="drop-zone" id="drop-zone" aria-label="Upload file — click, drag, or paste">
+    <input type="file" id="file-input" aria-hidden="true" tabindex="-1">
+    <div class="drop-main" id="drop-main">DROP FILE HERE</div>
+    <div class="drop-sub" id="drop-sub">click to browse &bull; ctrl+v to paste &bull; drag &amp; drop</div>
+  </button>
+
+  <div aria-live="polite" id="live-region"></div>
+
+  <div id="pw-row">
+    <input type="checkbox" id="pw-check" aria-label="Password protect this file">
+    <label for="pw-check">password protect</label>
+  </div>
+  <div id="pw-input-wrap" style="display:none">
+    <label for="pw-input" style="position:absolute;left:-9999px">File password</label>
+    <input type="password" id="pw-input" placeholder="set password" autocomplete="new-password" aria-label="File password">
+  </div>
+
+  <div class="curl-box">
+    <code>curl -F file=@example.png https://hardfiles.org/</code>
+  </div>
+
+  <div class="warning">ALL UPLOADS ARE SHREDDED AFTER 24 HOURS</div>
+</div>
 
 <script>
-    $(document).ready(function () {
-        $('#chooseFile').bind('change', function (e) {
-            var file = e.target.files[0];
-            if (!file) {
-                $(".file-upload").removeClass('active');
-                $("#noFile").text("No file chosen...");
-                return;
-            }
+(function() {
+  // Background fade-in
+  var bgEl = document.getElementById('bg');
+  var bgStyle = bgEl.style.backgroundImage;
+  if (bgStyle && bgStyle !== 'url("")' && bgStyle !== "url('')") {
+    var url = bgStyle.replace(/url\(["']?([^"')]+)["']?\)/, '$1');
+    var img = new Image();
+    img.onload = function() { bgEl.classList.add('loaded'); };
+    img.onerror = function() { bgEl.classList.add('loaded'); };
+    img.src = url;
+  } else {
+    bgEl.classList.add('loaded');
+  }
 
-            $(".file-upload").addClass('active');
-            $("#noFile").text(file.name.replace("C:\\fakepath\\", ""));
+  var dropZone = document.getElementById('drop-zone');
+  var fileInput = document.getElementById('file-input');
+  var dropMain = document.getElementById('drop-main');
+  var dropSub = document.getElementById('drop-sub');
+  var liveRegion = document.getElementById('live-region');
+  var pwCheck = document.getElementById('pw-check');
+  var pwInputWrap = document.getElementById('pw-input-wrap');
+  var pwInput = document.getElementById('pw-input');
 
-            var reader = new FileReader();
-            reader.onload = function(event) {
-                var binaryData = event.target.result;
-                // Compress the file data
-          var compressed = pako.gzip(new Uint8Array(binaryData), { level:1});
-                var compressedFile = new Blob([compressed], { type: "application/gzip" });
-                updateFileInput(compressedFile, file.name);
-            };
-            reader.readAsArrayBuffer(file);
+  // Password toggle
+  pwCheck.addEventListener('change', function() {
+    pwInputWrap.style.display = pwCheck.checked ? 'block' : 'none';
+    if (pwCheck.checked) pwInput.focus();
+  });
+
+  // Click to open file picker
+  dropZone.addEventListener('click', function(e) {
+    if (e.target.closest('#pw-row') || e.target.closest('#pw-input-wrap')) return;
+    if (dropZone.classList.contains('success')) return;
+    fileInput.click();
+  });
+
+  fileInput.addEventListener('change', function() {
+    if (fileInput.files && fileInput.files[0]) {
+      uploadFile(fileInput.files[0]);
+    }
+  });
+
+  // Drag and drop
+  dropZone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    dropZone.classList.add('drag-over');
+  });
+  dropZone.addEventListener('dragleave', function(e) {
+    if (!dropZone.contains(e.relatedTarget)) {
+      dropZone.classList.remove('drag-over');
+    }
+  });
+  dropZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    var files = e.dataTransfer && e.dataTransfer.files;
+    if (files && files[0]) uploadFile(files[0]);
+  });
+
+  // Paste
+  document.addEventListener('paste', function(e) {
+    var items = e.clipboardData && e.clipboardData.items;
+    if (!items) return;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].kind === 'file') {
+        var file = items[i].getAsFile();
+        if (file) { uploadFile(file); break; }
+      }
+    }
+  });
+
+  function setUploading(pct) {
+    dropZone.classList.remove('success', 'error-state', 'drag-over');
+    dropZone.classList.add('uploading');
+    var txt = (pct !== null && pct !== undefined) ? 'UPLOADING... ' + pct + '%' : 'UPLOADING...';
+    dropMain.textContent = txt;
+    dropSub.textContent = '';
+    liveRegion.textContent = txt;
+  }
+
+  function setSuccess(url) {
+    dropZone.classList.remove('uploading', 'error-state', 'drag-over');
+    dropZone.classList.add('success');
+
+    // Clear children
+    while (dropMain.firstChild) dropMain.removeChild(dropMain.firstChild);
+    while (dropSub.firstChild) dropSub.removeChild(dropSub.firstChild);
+
+    var urlEl = document.createElement('div');
+    urlEl.className = 'drop-url';
+    urlEl.textContent = url;
+    urlEl.title = 'Click to copy';
+    urlEl.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(function() {
+          urlEl.textContent = 'COPIED';
+          setTimeout(function() { urlEl.textContent = url; }, 1200);
         });
-
-        function updateFileInput(compressedFile, fileName) {
-            var dataTransfer = new DataTransfer();
-            dataTransfer.items.add(new File([compressedFile], fileName + '.5000'));
-            $('#chooseFile')[0].files = dataTransfer.files;
-        }
+      }
     });
+
+    var anotherBtn = document.createElement('button');
+    anotherBtn.className = 'drop-another';
+    anotherBtn.textContent = 'upload another';
+    anotherBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      resetZone();
+    });
+
+    dropMain.appendChild(urlEl);
+    dropSub.appendChild(anotherBtn);
+    liveRegion.textContent = 'Upload complete. URL: ' + url;
+  }
+
+  function setError(msg) {
+    dropZone.classList.remove('uploading', 'success', 'drag-over');
+    dropZone.classList.add('error-state');
+    dropMain.textContent = msg || 'UPLOAD FAILED';
+    dropSub.textContent = '';
+    liveRegion.textContent = msg || 'Upload failed';
+    setTimeout(resetZone, 3000);
+  }
+
+  function resetZone() {
+    dropZone.classList.remove('uploading', 'success', 'error-state', 'drag-over');
+    dropMain.textContent = 'DROP FILE HERE';
+    dropSub.textContent = 'click to browse \u2022 ctrl+v to paste \u2022 drag \u0026 drop';
+    liveRegion.textContent = '';
+    fileInput.value = '';
+  }
+
+  function uploadFile(file) {
+    setUploading(0);
+    var fd = new FormData();
+    fd.append('file', file);
+    if (pwCheck.checked && pwInput.value) {
+      fd.append('password', pwInput.value);
+    }
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/');
+    xhr.upload.onprogress = function(e) {
+      if (e.lengthComputable) {
+        var pct = Math.round(e.loaded / e.total * 100);
+        setUploading(pct);
+      }
+    };
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        setSuccess(xhr.responseText.trim());
+      } else if (xhr.status === 413) {
+        setError('FILE TOO LARGE');
+      } else {
+        setError('UPLOAD FAILED: ' + xhr.status);
+      }
+    };
+    xhr.onerror = function() { setError('NETWORK ERROR'); };
+    xhr.send(fd);
+  }
+})();
 </script>
+</body>
+</html>

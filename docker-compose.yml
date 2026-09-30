@@ -7,5 +7,5 @@ services:
       - ./backgrounds:/app/backgrounds
       - ./config.toml:/app/config.toml
     ports:
-      - "5000:5000"
+      - "127.0.0.1:5000:5000"
     restart: unless-stopped

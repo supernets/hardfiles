@@ -1,6 +1,6 @@
 webroot = "www"
 lport = "5000"
-vhost = "hardfiles.org"
+vhost = "hardfiles.supernets.org"
 filelen = 6
 folder = "files"
 bgfolder = "backgrounds"

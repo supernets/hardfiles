@@ -10,6 +10,7 @@ import (
 	"log"
 	"math/big"
 	"mime"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -736,7 +737,7 @@ body::after {
   </div>
 
   <div class="curl-box">
-    <code>curl -F file=@example.png https://hardfiles.org/</code>
+    <code>curl -F file=@example.png https://hardfiles.supernets.org/</code>
   </div>
 
   <div class="warning">ALL UPLOADS ARE SHREDDED AFTER 24 HOURS</div>
@@ -946,9 +947,15 @@ func pickRandomBg() string {
 
 func handleUpload(w http.ResponseWriter, r *http.Request) {
 	// Rate limit by IP
-	ip := r.RemoteAddr
-	if idx := strings.LastIndex(ip, ":"); idx != -1 {
-		ip = ip[:idx]
+	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		ip = r.RemoteAddr
+	}
+	// Behind a reverse proxy, trust X-Real-IP only from loopback/private peers
+	if realIP := r.Header.Get("X-Real-IP"); realIP != "" {
+		if peer := net.ParseIP(ip); peer != nil && (peer.IsLoopback() || peer.IsPrivate()) {
+			ip = realIP
+		}
 	}
 	if !rateLimiter.Allow(ip) {
 		http.Error(w, "Too Many Requests", http.StatusTooManyRequests)

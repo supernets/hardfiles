@@ -10,11 +10,13 @@ Upload a file, get a link, it's shredded in 24 hours.
 - Optional password protection on files
 - 7-pass secure file shredding on expiry
 - Random GIF backgrounds from a configurable directory
-- IP-based rate limiting
-- Streaming uploads (no memory buffering — handles files up to 5GB)
+- IP-based rate limiting *(uses `X-Real-IP` when the peer is a loopback or private address)*
+- Streaming uploads *(no memory buffering, handles files up to 5GB)*
 - Single Go binary, no database
 
 ## Quick Start
+
+Requires Go 1.25+.
 
 ```bash
 go build -o hardfiles main.go
@@ -34,7 +36,7 @@ Edit `config.toml`:
 ```toml
 webroot = "www"
 lport = "5000"
-vhost = "hardfiles.org"
+vhost = "hardfiles.supernets.org"
 filelen = 6
 folder = "files"
 bgfolder = "backgrounds"
@@ -51,10 +53,10 @@ Visit the site, drop a file, get a link.
 ### curl
 ```bash
 # Upload a file
-curl -F file=@photo.png https://hardfiles.org/
+curl -F file=@photo.png https://hardfiles.supernets.org/
 
 # Upload with password
-curl -F file=@secret.pdf -F password=hunter2 https://hardfiles.org/
+curl -F file=@secret.pdf -F password=hunter2 https://hardfiles.supernets.org/
 ```
 
 ### Bash Alias
@@ -62,7 +64,7 @@ curl -F file=@secret.pdf -F password=hunter2 https://hardfiles.org/
 ```bash
 # Add to ~/.bashrc
 upload() {
-    curl -F file=@$1 https://hardfiles.org/
+    curl -F file=@$1 https://hardfiles.supernets.org/
 }
 ```
 
@@ -79,12 +81,12 @@ Hardfiles is designed to run behind nginx. Key configuration for large file uplo
 ```nginx
 server {
     listen 443 ssl;
-    server_name hardfiles.org;
+    server_name hardfiles.supernets.org;
 
     # CRITICAL: Must match or exceed max_upload_mb in config.toml
     client_max_body_size 5120m;
 
-    # Disable request buffering — stream directly to backend
+    # Disable request buffering, stream directly to backend
     proxy_request_buffering off;
 
     # Increase timeouts for large uploads
@@ -105,35 +107,43 @@ server {
         proxy_http_version 1.1;
     }
 
-    ssl_certificate /etc/letsencrypt/live/hardfiles.org/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/hardfiles.org/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/hardfiles.supernets.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/hardfiles.supernets.org/privkey.pem;
 }
 ```
 
 **Important nginx settings:**
-- `client_max_body_size 5120m` — must match `max_upload_mb` in config.toml, or nginx will reject uploads before they reach hardfiles
-- `proxy_request_buffering off` — prevents nginx from buffering the upload to disk before forwarding (critical for memory-limited servers)
-- `proxy_read_timeout 3600s` — 1 hour timeout for large uploads on slow connections
+- `client_max_body_size 5120m`: must match `max_upload_mb` in config.toml, or nginx will reject uploads before they reach hardfiles
+- `proxy_request_buffering off`: prevents nginx from buffering the upload to disk before forwarding *(critical for memory-limited servers)*
+- `proxy_read_timeout 3600s`: 1 hour timeout for large uploads on slow connections
 
 ## Docker
 
 ```bash
 # Build and run
-docker compose up -d
+docker compose up -d --build
 
 # Volumes mounted:
-# ./files:/app/files              — uploaded files (auto-cleared every 24h)
-# ./backgrounds:/app/backgrounds  — GIF backgrounds
-# ./config.toml:/app/config.toml  — configuration
+# ./files:/app/files              uploaded files (shredded after ttl_hours)
+# ./backgrounds:/app/backgrounds  GIF backgrounds
+# ./config.toml:/app/config.toml  configuration
+```
+
+The container listens on `127.0.0.1:5000` only, so it must be fronted by a reverse proxy.
+
+## Tests
+
+```bash
+go test ./...
 ```
 
 ## Security
 
-- Files are shredded with 7-pass random overwrite before deletion (effective on HDD; ceremonial on SSD — use dm-crypt/LUKS for SSD)
+- Files are shredded with a 7-pass random overwrite plus a zero pass before deletion *(effective on HDD, ceremonial on SSD, use dm-crypt/LUKS for SSD)*
 - Path traversal prevention on all routes
 - Upload size limits enforced at the HTTP level
 - Password-protected files use bcrypt hashing
-- MIME type allowlist for inline serving (images, PDFs, text, audio, video) — HTML/SVG/JS forced to download to prevent stored XSS
+- MIME type allowlist for inline serving *(images, PDFs, text, audio, video)*, HTML/SVG/JS are forced to download to prevent stored XSS
 - Content-Security-Policy headers on all HTML responses
 - No file listing or directory browsing
 
@@ -145,4 +155,4 @@ docker compose up -d
 
 ## License
 
-MIT
+ISC, see [LICENSE](LICENSE)

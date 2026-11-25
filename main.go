@@ -311,6 +311,10 @@ const passwordPageTmpl = `<!DOCTYPE html>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>HARDFILES — PASSWORD REQUIRED</title>
 <link rel="icon" href="/static/fist.ico">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+<link rel="manifest" href="/static/manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="HARDFILES">
+<meta name="theme-color" content="#000000">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&display=swap">
 <style>
 :root {
@@ -424,6 +428,10 @@ const indexHTML = `<!DOCTYPE html>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>HARDFILES</title>
 <link rel="icon" href="/static/fist.ico">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+<link rel="manifest" href="/static/manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="HARDFILES">
+<meta name="theme-color" content="#000000">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&display=swap">
 <style>
 :root {
@@ -1296,6 +1304,9 @@ func main() {
 	if _, err := toml.DecodeFile("config.toml", &conf); err != nil {
 		log.Fatalf("config: %v", err)
 	}
+
+	// Go's built-in MIME table has no entry for the PWA manifest
+	mime.AddExtensionType(".webmanifest", "application/manifest+json")
 
 	// Ensure upload dir exists
 	if err := os.MkdirAll(conf.Folder, 0755); err != nil {
